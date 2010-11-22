@@ -19,7 +19,7 @@
 
 module mesh
   use global
- ! use oct_parser
+  use oct_parser
   !use messages
   use splines
   !use units
@@ -82,7 +82,7 @@ contains
     !-----------------------------------------------------------------------!
     type(mesh_type), intent(out) :: m
 
-    call push_sub("mesh_null")!this just looks like a timing function, comment out
+    !call push_sub("mesh_null")!this just looks like a timing function, comment out
 
     m%type = 0
     m%a    = M_ZERO
@@ -90,7 +90,7 @@ contains
     m%np   = 0
     nullify(m%r)
 
-    call pop_sub()
+    !call pop_sub()
   end subroutine mesh_null
 
   subroutine mesh_init(z, m)
@@ -107,52 +107,54 @@ contains
     integer  :: type, is_def_np, is_def_a, np
     real(R8) :: mesh_r1, mesh_rnp, a
 
-    call push_sub("mesh_init")
+    !call push_sub("mesh_init")
 
-    ASSERT(m%type == 0)
+    !ASSERT(m%type == 0)
 
     !Read input options
     call oct_parse_int('MeshType', LOG1, type)
     select case (type)
     case (LOG1, LOG2, LIN)
     case default
-      message(1) =  "Illegal MeshType."
+      !.(1) =  "Illegal MeshType."
       call write_fatal(1)
     end select
 
     call oct_parse_double('MeshStartingPoint', sqrt(z)*1.0E-5, mesh_r1)
     if (mesh_r1 <= M_ZERO) then
-      message(1) =  "MeshStartingPoint can not take negative values."
+      !.(1) =  "MeshStartingPoint can not take negative values."
       call write_fatal(1)
     end if
-    mesh_r1 = mesh_r1*units_in%length%factor
+    !mesh_r1 = mesh_r1*units_in%length%factor!assume for now that we can simply operate in on fixed unit type => factor ==1 or constant
+    mesh_r1 = mesh_r1*M_ONE!QE uses atomic Ry units internally, that is bohr for length
 
     call oct_parse_double('MeshOutmostPoint', sqrt(z)*M_THIRTY, mesh_rnp)
     if (mesh_rnp <= M_ZERO .or. mesh_rnp < mesh_r1) then
-      message(1) = "MeshOutmostPoint can''t take negative values"
-      message(2) = "and must be greater than the mesh start point."
+      !.(1) = "MeshOutmostPoint can''t take negative values"
+      !.(2) = "and must be greater than the mesh start point."
       call write_fatal(2)
     end if
-    mesh_rnp = mesh_rnp*units_in%length%factor
+    !mesh_rnp = mesh_rnp*units_in%length%factor
+    mesh_rnp = mesh_rnp*M_ONE
     
     is_def_np = oct_parse_isdef('MeshNumberOfPoints')
     is_def_a  = oct_parse_isdef('MeshParameter')
     if (is_def_np == 1 .and. is_def_a == 1) then
-      message(1) = "MeshNumberOfPoints and MeshParameter input options"
-      message(2) = "can not be used at the same time."
+      !.(1) = "MeshNumberOfPoints and MeshParameter input options"
+      !.(2) = "can not be used at the same time."
       call write_fatal(2)
     end if
 
     if (is_def_a == 0) then
       call oct_parse_int('MeshNumberOfPoints', int(sqrt(z))*200, np)
       if (np <= 3) then
-        message(1) = "Mesh must have at least 3 points."
+        !.(1) = "Mesh must have at least 3 points."
         call write_fatal(1)
       end if
     else
       call oct_parse_double('MeshParameter', M_DIME, a)
       if (a < M_ZERO) then
-        message(1) = "MeshParameter can not take negative values."
+        !.(1) = "MeshParameter can not take negative values."
         call write_fatal(1)
       end if
     end if
@@ -164,7 +166,7 @@ contains
       call mesh_generation(m, type, mesh_r1, mesh_rnp, a=a)
     end if
 
-    call pop_sub()
+    !call pop_sub()
   end subroutine mesh_init
 
   subroutine mesh_generation(m, type, r1, rn, n, a)
@@ -188,11 +190,11 @@ contains
     integer :: i
     real(R8) :: a1, a2, n1, n2, am, nm, f1, fm
 
-    call push_sub("mesh_generation")
+    !call push_sub("mesh_generation")
 
     !Check optional arguments
     if (present(n) .and. present(a)) then
-      message(1) = "Only one optional argument can be set in mesh_generation"
+      !.(1) = "Only one optional argument can be set in mesh_generation"
       call write_fatal(1)
     end if
 
@@ -271,7 +273,7 @@ contains
       end do
     end select
 
-    call pop_sub()!this is also a timing function
+    !call pop_sub()!this is also a timing function
   contains
 
     real(R8) function func(r1, rn, n, a)
@@ -288,7 +290,7 @@ contains
     type(mesh_type), intent(inout) :: m_a
     type(mesh_type), intent(in)    :: m_b
 
-    call push_sub("mesh_copy")
+    !call push_sub("mesh_copy")
 
     call mesh_end(m_a)
     m_a%type = m_b%type
@@ -298,7 +300,7 @@ contains
     allocate(m_a%r(m_a%np))
     m_a%r = m_b%r
 
-    call pop_sub()
+    !call pop_sub()
   end subroutine mesh_copy
 
   function equal_mesh(m_a, m_b)
@@ -308,12 +310,12 @@ contains
     type(mesh_type), intent(in) :: m_a, m_b
     logical :: equal_mesh
 
-    call push_sub("equal_mesh")
+    !call push_sub("equal_mesh")
 
     equal_mesh = (m_a%type == m_b%type .and. m_a%a == m_b%a .and. &
                   m_a%b == m_b%b .and. m_a%np == m_b%np)
 
-    call pop_sub()
+    !call pop_sub()
   end function equal_mesh
 
   subroutine mesh_save(unit, m)
@@ -328,14 +330,14 @@ contains
 
     integer :: i
 
-    call push_sub("mesh_save")
+    !call push_sub("mesh_save")
 
-    ASSERT(m%type /= 0)
+    !ASSERT(m%type /= 0)
 
     write(unit) m%type, m%a, m%b, m%np
     write(unit) (m%r(i), i=1, m%np)
 
-    call pop_sub()
+    !call pop_sub()
   end subroutine mesh_save
 
   subroutine mesh_load(unit, m)
@@ -350,15 +352,15 @@ contains
 
     integer :: i
 
-    call push_sub("mesh_load")
+    !call push_sub("mesh_load")
 
-    ASSERT(m%type == 0)
+    !ASSERT(m%type == 0)
 
     read(unit) m%type, m%a, m%b, m%np
     allocate(m%r(m%np))
     read(unit) (m%r(i), i=1, m%np)
 
-    call pop_sub()
+    !call pop_sub()
   end subroutine mesh_load
 
   subroutine mesh_transfer(m_a, fa, m_b, fb, interp_type)
@@ -377,13 +379,13 @@ contains
     real(R8),        intent(out) :: fb(m_b%np)
     integer,         intent(in)  :: interp_type
 
-    call push_sub("mesh_transfer")
+    !call push_sub("mesh_transfer")
 
-    ASSERT(m_a%type /= 0 .and. m_b%type /= 0)
+    !ASSERT(m_a%type /= 0 .and. m_b%type /= 0)
 
     call spline_mesh_transfer(m_a%np, m_a%r, fa, m_b%np, m_b%r, fb, interp_type)
 
-    call pop_sub()
+    !call pop_sub()
   end subroutine mesh_transfer
 
   subroutine mesh_output_params(m, unit, verbose_limit)
@@ -395,35 +397,35 @@ contains
     type(mesh_type), intent(in) :: m
     integer,         intent(in), optional :: unit, verbose_limit
 
-    call push_sub("mesh_output_params")
+    !call push_sub("mesh_output_params")
 
-    ASSERT(m%type /= 0)
+    !ASSERT(m%type /= 0)
 
-    message(1) = ""
-    message(2) = "Mesh information:"
+    !message(1) = ""
+    !message(2) = "Mesh information:"
     select case (m%type)
     case (LIN)
-      message(3) = "  Type: linear"
+      !message(3) = "  Type: linear"
     case (LOG1)
-      message(3) = "  Type: logarithmic [ri = b*exp(a*i)]"
+      !message(3) = "  Type: logarithmic [ri = b*exp(a*i)]"
     case (LOG2)
-      message(3) = "  Type: logarithmic [ri = b*(exp(a*i) - 1)]"
+      !message(3) = "  Type: logarithmic [ri = b*(exp(a*i) - 1)]"
     end select
-    write(message(4), '("  Mesh starting point:   ",ES8.2E2,1X,A)') m%r(1)/units_out%length%factor, trim(units_out%length%abbrev)
-    write(message(5), '("  Mesh outmost point:    ",F7.3,1X,A)') m%r(m%np)/units_out%length%factor, trim(units_out%length%abbrev)
-    write(message(6), '("  Mesh parameters (a, b): ",ES12.5E2,", ",ES12.5E2)') m%a, m%b
+    !write(message(4), '("  Mesh starting point:   ",ES8.2E2,1X,A)') m%r(1)/units_out%length%factor, trim(units_out%length%abbrev)
+    !write(message(5), '("  Mesh outmost point:    ",F7.3,1X,A)') m%r(m%np)/units_out%length%factor, trim(units_out%length%abbrev)
+    !write(message(6), '("  Mesh parameters (a, b): ",ES12.5E2,", ",ES12.5E2)') m%a, m%b
 
-    if (present(unit)) then
-      call write_info(6, unit=unit)
-    else
-      if (present(verbose_limit)) then
-        call write_info(6, verbose_limit)
-      else
-        call write_info(6)
-      end if
-    end if
- 
-    call pop_sub()
+!!    if (present(unit)) then !not too sure this is necessary
+!!      call write_info(6, unit=unit)
+!!    else
+!!      if (present(verbose_limit)) then
+!!        call write_info(6, verbose_limit)
+!!      else
+!!        call write_info(6)
+!!      end if
+!!    end if
+!! 
+!!    call pop_sub() !this is a timer thing, not interested
   end subroutine mesh_output_params
 
   subroutine mesh_end(m)
@@ -432,7 +434,7 @@ contains
     !-----------------------------------------------------------------------!
     type(mesh_type), intent(inout) :: m
 
-    call push_sub("mesh_end")
+    !call push_sub("mesh_end")
 
     m%type = 0
     m%a    = M_ZERO
@@ -442,7 +444,7 @@ contains
       deallocate(m%r)
     end if
 
-    call pop_sub()
+    !call pop_sub()
   end subroutine mesh_end
 
 end module mesh

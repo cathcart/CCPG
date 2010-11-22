@@ -91,7 +91,11 @@ write_paw_recon.o \
 write_pseudo.o \
 write_results.o \
 write_resultsps.o \
-write_upf.o
+write_upf.o\
+mesh.o\
+global.o\
+splines.o\
+gsl_interface_f.o
 
 LD1MODS = \
 atomic_paw.o \

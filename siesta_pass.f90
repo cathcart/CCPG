@@ -1,4 +1,6 @@
       module siesta_pass
+      use global
+      use mesh
       type ps_io_type
       private
       integer :: file_format

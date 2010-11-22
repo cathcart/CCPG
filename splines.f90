@@ -20,7 +20,7 @@
 module splines
   use global
  ! use messages
- ! use gsl_interface
+  use gsl_interface
   implicit none
 
 
@@ -106,7 +106,7 @@ contains
 
     real(R8), allocatable :: auxx(:), auxy(:)
 
-    ASSERT(.not.associated(spline%info))
+    !ASSERT(.not.associated(spline%info))!this is an error message thing
 
     !Allocate memory
     allocate(spline%info)
@@ -133,7 +133,7 @@ contains
     type(spline_type), intent(inout) :: spline_a
     type(spline_type), intent(in)    :: spline_b
 
-    ASSERT(associated(spline_b%info))
+    !ASSERT(associated(spline_b%info))
 
     !Deallocate the memory previously assigned to spline_a
     call spline_end(spline_a)

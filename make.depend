@@ -350,5 +350,7 @@ write_upf.o : ../Modules/kind.o
 write_upf.o : ld1inc.o
 test_bessel.o : ../include/f_defs.h
 siesta_pass.o : global.o mesh.o
-mesh.o : global.o splines.o
-splines.o : global.o gsl_interface.o
+liboct_parser.o : global.o
+mesh.o : global.o splines.o liboct_parser.o
+gsl_interface_f.o : global.o
+splines.o : global.o gsl_interface_f.o

@@ -61,5 +61,8 @@ module global
 
   !Other stuff
   logical :: in_debug_mode = .false.
+  
+  !something i put in here to cover the pointer size problem
+  integer ,parameter :: POINTER_SIZE = 8 
 
 end module global
