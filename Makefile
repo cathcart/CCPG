@@ -94,14 +94,14 @@ write_resultsps.o \
 write_upf.o\
 mesh.o\
 global.o\
-splines.o\
-gsl_interface_f.o
+splines.o
 
 LD1MODS = \
 atomic_paw.o \
 ld1inc.o \
 parameters.o \
-siesta_pass.o
+siesta_pass.o\
+gsl_interface_f.o
 
 MODULES = \
 ../Modules/atom.o \
@@ -140,13 +140,15 @@ MODULES = \
 ../PW/para.o \
 ../PW/startup.o 
 
+LD1LIBS=-lgsl -lcblas
+
 TLDEPS= bindir mods libs 
 
 all: tldeps ld1.x
 
 ld1.x: $(LD1OBJS) ld1.o $(LD1MODS) $(MODULES) $(LIBOBJS)
 	$(LD) $(LDFLAGS) -o ld1.x \
-		ld1.o $(LD1OBJS) $(LD1MODS) $(MODULES) $(LIBOBJS) $(LIBS)
+		ld1.o $(LD1OBJS) $(LD1MODS) $(MODULES) $(LIBOBJS) $(LIBS) $(LD1LIBS)
 	- ( cd ../bin ; ln -fs ../atomic/ld1.x . )
 
 

@@ -19,8 +19,8 @@
 
 module splines
   use global
- ! use messages
   use gsl_interface
+  !use messages
   implicit none
 
 
@@ -339,7 +339,7 @@ contains
     integer :: i
     type(spline_type) :: spl
 
-    call push_sub("spline_mesh_transfer")
+    !call push_sub("spline_mesh_transfer")
 
     call spline_null(spl)
     call spline_init(spl, np_a, x_a, y_a, interp_type)
@@ -348,7 +348,7 @@ contains
     end do
     call spline_end(spl)
 
-    call pop_sub()
+    !call pop_sub()
   end subroutine spline_mesh_transfer
 
 end module splines

@@ -353,4 +353,4 @@ siesta_pass.o : global.o mesh.o
 liboct_parser.o : global.o
 mesh.o : global.o splines.o liboct_parser.o
 gsl_interface_f.o : global.o
-splines.o : global.o gsl_interface_f.o
+splines.o : gsl_interface_f.o global.o
