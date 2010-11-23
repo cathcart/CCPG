@@ -155,7 +155,7 @@ gener_pseudo.o : ../Modules/radial_grids.o
 gener_pseudo.o : atomic_paw.o
 gener_pseudo.o : ld1inc.o
 gener_pseudo.o : parameters.o
-gener_pseudo.o : siesta_pass.o
+gener_pseudo.o : siesta/siesta_pass.o
 grad_log.o : ../Modules/kind.o
 green.o : ../Modules/kind.o
 green.o : ../Modules/radial_grids.o
@@ -349,8 +349,3 @@ write_upf.o : ../Modules/functionals.o
 write_upf.o : ../Modules/kind.o
 write_upf.o : ld1inc.o
 test_bessel.o : ../include/f_defs.h
-siesta_pass.o : global.o mesh.o
-liboct_parser.o : global.o
-mesh.o : global.o splines.o liboct_parser.o
-gsl_interface_f.o : global.o
-splines.o : gsl_interface_f.o global.o

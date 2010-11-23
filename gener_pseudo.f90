@@ -44,7 +44,7 @@ subroutine gener_pseudo
                     lnc2paw, rcutnc2paw, rhos, which_augfun
   use atomic_paw, only : us2paw, paw2us
   !my edits
-  use siesta_pass, only: siesta_output
+  use siesta_pass
   implicit none
 
   integer ::   &
@@ -92,7 +92,6 @@ subroutine gener_pseudo
 
   real(DP) :: q, fac, vq, pi, wrk(ndmx), jlq(ndmx), norm(nwfsx), normr(nwfsx)
   integer  :: ll
-
 
   if (lpaw) then
      write(stdout, &

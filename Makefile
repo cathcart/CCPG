@@ -91,17 +91,13 @@ write_paw_recon.o \
 write_pseudo.o \
 write_results.o \
 write_resultsps.o \
-write_upf.o\
-mesh.o\
-global.o\
-splines.o
+write_upf.o
 
 LD1MODS = \
 atomic_paw.o \
 ld1inc.o \
 parameters.o \
-siesta_pass.o\
-gsl_interface_f.o
+siesta/siesta_pass.o 
 
 MODULES = \
 ../Modules/atom.o \
