@@ -1,25 +1,30 @@
 FC=ifort
-FCFLAGS=-O2
+FCFLAGS=-O2 -static
 CC=gcc
 CCFLAGS=
 
-SUB_DIR_OBJECTS=gsl_interface_c.o gsl_interface_f.o global.o mesh.o splines.o siesta_pass.o
+SUB_DIR_OBJECTS= gsl_interface_c.o gsl_interface_f.o global.o mesh.o splines.o siesta_pass.o
 LIBRARIES= -lgsl -lgslcblas -lm 
 CINCLUDES= -I.
 
-all: $(SUB_DIR_OBJECTS)
+#all: $(SUB_DIR_OBJECTS)
+all: siesta_pass.a
+
+BUILDDIR=.
 
 include make.depend
 
+siesta_pass.a:$(SUB_DIR_OBJECTS)
+	ar rc siesta_pass.a $(SUB_DIR_OBJECTS);cp siesta_pass.a ../.;cp *.o ../.;cp *.mod ../.
 
-%:%.o
+$(BUILDDIR)/%:%.o
 	$(FC) $(FCFLAGS) -o $@ $(LIBRARIES) $^ 
 
-%.o: %.f90
+$(BUILDDIR)/%.o: %.f90
 	$(FC) $(FCFLAGS) -c $<
-%.o: %.F90
+$(BUILDDIR)/%.o: %.F90
 	$(FC) $(FCFLAGS) -c $<
-%.o: %.c
+$(BUILDDIR)/%.o: %.c
 	$(CC) $(CCFLAGS) -c $(CINCLUDES) $<
 
 clean:

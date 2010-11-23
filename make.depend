@@ -155,7 +155,7 @@ gener_pseudo.o : ../Modules/radial_grids.o
 gener_pseudo.o : atomic_paw.o
 gener_pseudo.o : ld1inc.o
 gener_pseudo.o : parameters.o
-gener_pseudo.o : siesta/siesta_pass.o
+gener_pseudo.o : siesta_pass.a
 grad_log.o : ../Modules/kind.o
 green.o : ../Modules/kind.o
 green.o : ../Modules/radial_grids.o

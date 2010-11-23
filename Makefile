@@ -96,8 +96,7 @@ write_upf.o
 LD1MODS = \
 atomic_paw.o \
 ld1inc.o \
-parameters.o \
-siesta/siesta_pass.o 
+parameters.o 
 
 MODULES = \
 ../Modules/atom.o \
@@ -136,7 +135,7 @@ MODULES = \
 ../PW/para.o \
 ../PW/startup.o 
 
-LD1LIBS=-lgsl -lcblas
+LD1LIBS=-lgsl -lcblas siesta_pass.a
 
 TLDEPS= bindir mods libs 
 

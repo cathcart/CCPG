@@ -60,7 +60,7 @@ module mesh
 
   private
   public :: mesh_type, &
-!!            mesh_null, &
+            mesh_null, &
 !!            mesh_init, &
 !!            mesh_generation, &
 !!            mesh_save, &
@@ -74,25 +74,25 @@ module mesh
             LIN, &
             LOG2
 
-!!contains
-!!
-!!  subroutine mesh_null(m)
-!!    !-----------------------------------------------------------------------!
-!!    ! Nullifies and sets to zero all the components of mesh m.              !
-!!    !-----------------------------------------------------------------------!
-!!    type(mesh_type), intent(out) :: m
-!!
-!!    !call push_sub("mesh_null")!this just looks like a timing function, comment out
-!!
-!!    m%type = 0
-!!    m%a    = M_ZERO
-!!    m%b    = M_ZERO
-!!    m%np   = 0
-!!    nullify(m%r)
-!!
-!!    !call pop_sub()
-!!  end subroutine mesh_null
-!!
+contains
+
+  subroutine mesh_null(m)
+    !-----------------------------------------------------------------------!
+    ! Nullifies and sets to zero all the components of mesh m.              !
+    !-----------------------------------------------------------------------!
+    type(mesh_type), intent(out) :: m
+
+    !call push_sub("mesh_null")!this just looks like a timing function, comment out
+
+    m%type = 0
+    m%a    = M_ZERO
+    m%b    = M_ZERO
+    m%np   = 0
+    nullify(m%r)
+
+    !call pop_sub()
+  end subroutine mesh_null
+
 !!  subroutine mesh_init(z, m)
 !!    !-----------------------------------------------------------------------!
 !!    ! Initializes the calculation mesh by reading the mesh parameter from   !
