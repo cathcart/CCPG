@@ -7,6 +7,9 @@ SUB_DIR_OBJECTS= gsl_interface_c.o gsl_interface_f.o global.o mesh.o splines.o s
 LIBRARIES= -lgsl -lgslcblas -lm 
 CINCLUDES= -I.
 
+MODULES_DIR=-I../../Modules/
+MODULES=../../Modules/radial_grids.o
+
 #all: $(SUB_DIR_OBJECTS)
 all: siesta_pass.a
 
@@ -14,16 +17,18 @@ BUILDDIR=.
 
 include make.depend
 
+LIBRARY_OBJS=$(SUB_DIR_OBJECTS) $(MODULES)
+
 siesta_pass.a:$(SUB_DIR_OBJECTS)
-	ar rc siesta_pass.a $(SUB_DIR_OBJECTS);cp siesta_pass.a ../.;cp *.o ../.;cp *.mod ../.
+	ar rc siesta_pass.a $(LIBRARY_OBJS);cp siesta_pass.a ../.;cp *.o ../.;cp *.mod ../.
 
 $(BUILDDIR)/%:%.o
-	$(FC) $(FCFLAGS) -o $@ $(LIBRARIES) $^ 
+	$(FC) $(FCFLAGS) -o $@ $(LIBRARIES) $(MODULES) $^
 
 $(BUILDDIR)/%.o: %.f90
-	$(FC) $(FCFLAGS) -c $<
+	$(FC) $(MODULES_DIR) $(FCFLAGS) -c $< 
 $(BUILDDIR)/%.o: %.F90
-	$(FC) $(FCFLAGS) -c $<
+	$(FC) $(MODULES_DIR) $(FCFLAGS) -c $< 
 $(BUILDDIR)/%.o: %.c
 	$(CC) $(CCFLAGS) -c $(CINCLUDES) $<
 

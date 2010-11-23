@@ -1,6 +1,7 @@
       module siesta_pass
       use global
       use mesh, only: mesh_null, mesh_type
+      use radial_grids, only: radial_grid_type
 
 !!      type ps_io_type
 !!      integer :: file_format
@@ -64,6 +65,7 @@
       endsubroutine siesta_output
 
       subroutine ps_io_type_fill()
+      type(radial_grid_type) :: grid
       print *, "let the filling begin"
       endsubroutine ps_io_type_fill
       
