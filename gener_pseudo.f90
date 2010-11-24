@@ -106,7 +106,7 @@ subroutine gener_pseudo
   elseif (pseudotype == 4) then
      write(stdout, &
           '(/,5x,21(''-''),'' Generating SIESTA pseudopotential '',21(''-''),/)')
-     call siesta_output()
+     call siesta_output(grid)
      pseudotype =3
   else
      call errore('gener_pseudo','pseudotype not programmed',1)
