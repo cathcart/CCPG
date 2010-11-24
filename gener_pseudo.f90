@@ -44,7 +44,7 @@ subroutine gener_pseudo
                     lnc2paw, rcutnc2paw, rhos, which_augfun
   use atomic_paw, only : us2paw, paw2us
   !my edits
-  use siesta_pass
+  use siesta_pass, only: siesta_output
   implicit none
 
   integer ::   &

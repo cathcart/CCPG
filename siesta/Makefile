@@ -7,8 +7,8 @@ SUB_DIR_OBJECTS= gsl_interface_c.o gsl_interface_f.o global.o mesh.o splines.o s
 LIBRARIES= -lgsl -lgslcblas -lm 
 CINCLUDES= -I.
 
-MODULES_DIR=-I../../Modules/
-MODULES=../../Modules/radial_grids.o
+MODULES_DIR=-I../../Modules/ -I../
+MODULES=../../Modules/radial_grids.o ../ld1inc.o ../paw_type.o
 
 #all: $(SUB_DIR_OBJECTS)
 all: siesta_pass.a

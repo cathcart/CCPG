@@ -1,21 +1,24 @@
       module siesta_pass
+      !APE modules (modified)
       use global
       use mesh, only: mesh_null, mesh_type
+      !QE modules
       use radial_grids, only: radial_grid_type
+      use ld1inc, only: zed,enne,zval
 
       type ps_io_type
       integer :: file_format
   
       type(mesh_type) :: m
-!!  
-!!      !Generalities
-!!      character(3) :: symbol
-!!      real(R8) :: z_nuc
-!!      real(R8) :: z_val
-!!      real(R8) :: z_ion
-!!      integer :: wave_eq
-!!      integer :: nspin
-!!      integer :: scheme
+  
+      !Generalities
+      character(3) :: symbol
+      real(R8) :: z_nuc
+      real(R8) :: z_val
+      real(R8) :: z_ion
+      integer :: wave_eq
+      integer :: nspin
+      integer :: scheme
 !!  
 !!      !Pseudo potentials
 !!      logical :: have_psp
@@ -71,6 +74,8 @@
        type(mesh_type) :: m
        integer :: no_mesh_points
        real(R8) :: rn,r1
+       !generalities
+       character, external :: atom_name*2
 
        info%file_format=M_SIESTA! remember to include the M_SIESTA etc definitions at the top of this file
 
@@ -91,6 +96,22 @@
        m%r(:)=grid_in%r(:)
        !put this back into the info type
        info%m=m
+
+       !set the generalities
+       !set nuclear charge
+       info%z_nuc=zed
+       !set charge of the ion
+       info%z_ion=zed-enne
+       !set name
+       info%symbol=atom_name(nint(zed))
+       !set valence charge
+       info%z_val=zval
+       !wave_eq to integrate one of schrod. dirac or scalar_rel (1,2,3)
+       info%wave_eq=SCHRODINGER!lets assume this for now
+       !number of spin channels
+       info%nspin=1!assume this for now
+       !pseudo potential scheme one of HAM TM RTM MRPP (1,2,3,4)
+       info%scheme=2!assume just TM for now
 
       endsubroutine ps_io_type_fill
       
