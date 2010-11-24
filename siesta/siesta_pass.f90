@@ -3,8 +3,9 @@
       use global
       use mesh, only: mesh_null, mesh_type
       !QE modules
-      use radial_grids, only: radial_grid_type
-      use ld1inc, only: zed,enne,zval
+      use radial_grids, only: radial_grid_type,ndmx
+      use ld1inc, only: zed,enne,zval,nwf,nn,ll,jj,el,rcut,octsc,enltsc,phis
+      use ld1_parameters, only: nwfx,nwfsx
 
       type ps_io_type
       integer :: file_format
@@ -27,19 +28,19 @@
 !!      real(R8), pointer :: psp_j(:)
 !!      real(R8), pointer :: psp_v(:,:)
 !!  
-!!      !Pseudo wavefunctions
-!!      logical :: have_wfs
-!!      integer :: n_wfs 
-!!      integer, pointer :: wfs_n(:)
-!!      integer, pointer :: wfs_l(:)
-!!      real(R8), pointer :: wfs_j(:)
-!!      character(len=5), pointer :: wfs_label(:)
-!!      real(R8), pointer :: wfs_rc(:)
-!!      real(R8), pointer :: wfs_occ(:,:)
-!!      real(R8), pointer :: wfs_ev(:)
-!!      real(R8), pointer :: wfs(:,:)
-!!      real(R8), pointer :: rho_val(:)
-!!  
+      !Pseudo wavefunctions
+      logical :: have_wfs
+      integer :: n_wfs 
+      integer, pointer :: wfs_n(:)
+      integer, pointer :: wfs_l(:)
+      real(R8), pointer :: wfs_j(:)
+      character(len=5), pointer :: wfs_label(:)
+      real(R8), pointer :: wfs_rc(:)
+      real(R8), pointer :: wfs_occ(:,:)
+      real(R8), pointer :: wfs_ev(:)
+      real(R8), pointer :: wfs(:,:)
+      real(R8), pointer :: rho_val(:)
+  
 !!      !XC
 !!      integer :: ixc
 !!  
@@ -72,7 +73,7 @@
        type(ps_io_type) :: info
        !mesh parameters
        type(mesh_type) :: m
-       integer :: no_mesh_points
+       integer :: no_mesh_points,i,j
        real(R8) :: rn,r1
        !generalities
        character, external :: atom_name*2
@@ -112,6 +113,30 @@
        info%nspin=1!assume this for now
        !pseudo potential scheme one of HAM TM RTM MRPP (1,2,3,4)
        info%scheme=2!assume just TM for now
+
+       !set the wavefunction stuff now
+       info%have_wfs=.true.
+       info%n_wfs=nwf
+       allocate(info%wfs_n(nwfx))
+       info%wfs_n(:)=nn(:)
+       allocate(info%wfs_l(nwfx))
+       info%wfs_l(:)=ll(:)
+       allocate(info%wfs_j(nwfx))
+       info%wfs_j(:)=jj(:)
+       allocate(info%wfs_label(nwfx))
+       info%wfs_label(:)=el(:)
+       allocate(info%wfs_rc(nwfsx))!cut off for pseudos (NO US allowed)
+       info%wfs_rc(:)=rcut(:)
+       allocate(info%wfs_occ(nwfsx,info%nspin))
+       !here we are using the variale configuration occupation listing, just the first one though
+       info%wfs_occ(:,1)=octsc(:,1)!pretend there's only a single spin channel
+       allocate(info%wfs_ev(nwfsx))
+       info%wfs_ev(:)=enltsc(:,1)
+       allocate(info%wfs(ndmx,nwfsx))
+       info%wfs(:,:)=phis(:,:)
+       allocate(info%rho_val(ndmx))
+       info%rho_val=rhos(:,1)!rhos(ndmx,2), i guess this is up and down density. with nspin=1 only 1 channel here is nonzero
+       !(check this again later, i might have the wrong channel ^)
 
       endsubroutine ps_io_type_fill
       

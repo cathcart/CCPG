@@ -1,4 +1,4 @@
 gsl_interface_f.o: gsl_interface_c.o global.o
 mesh.o: global.o splines.o gsl_interface_f.o gsl_interface_c.o
 splines.o: global.o gsl_interface_f.o gsl_interface_c.o
-siesta_pass.o: global.o mesh.o splines.o gsl_interface_f.o gsl_interface_c.o ../../Modules/radial_grids.o ../ld1inc.o ../paw_type.o
+siesta_pass.o: global.o mesh.o splines.o gsl_interface_f.o gsl_interface_c.o ../../Modules/radial_grids.o ../ld1inc.o ../paw_type.o ../parameters.o

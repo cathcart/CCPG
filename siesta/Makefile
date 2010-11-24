@@ -8,7 +8,7 @@ LIBRARIES= -lgsl -lgslcblas -lm
 CINCLUDES= -I.
 
 MODULES_DIR=-I../../Modules/ -I../
-MODULES=../../Modules/radial_grids.o ../ld1inc.o ../paw_type.o
+MODULES=../../Modules/radial_grids.o ../ld1inc.o ../paw_type.o ../parameters.o
 
 #all: $(SUB_DIR_OBJECTS)
 all: siesta_pass.a
