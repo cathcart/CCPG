@@ -106,7 +106,8 @@ subroutine gener_pseudo
   elseif (pseudotype == 4) then
      write(stdout, &
           '(/,5x,21(''-''),'' Generating SIESTA pseudopotential '',21(''-''),/)')
-     call siesta_output(grid)
+     !call siesta_output(grid)
+     !print *, phis(:,:)
      pseudotype =3
   else
      call errore('gener_pseudo','pseudotype not programmed',1)
@@ -142,6 +143,9 @@ subroutine gener_pseudo
   do n=1,nwfs
      if (enls(n) == 0.0_dp) enls(n)=enl(nstoae(n))
   enddo
+  !edit
+  print *, "this is enls"
+  print *, enls(:)
   !
   ! Set the all-electron wavefunctions, calculating those at user supplied
   ! energies. The wavefunctions are written on file at this point, so
@@ -259,7 +263,9 @@ subroutine gener_pseudo
         call compute_chi(lam,ikk(ns),phis(1,ns),chis(1,ns),xc,enls(ns),lbes4)
      endif
   enddo
-
+!!  !edit
+!!  print *, "phis"
+!!  print *, phis(:,:)
 
   !      do n=1,mesh
   !         write(stdout,'(5e15.7)') r(n),psipsus(n,1),chis(n,1),
@@ -401,6 +407,7 @@ subroutine gener_pseudo
      enddo
   endif
 
+
   do is=1,nspin
      ddd(:,:,is)=bmat(:,:)
   enddo
@@ -461,6 +468,9 @@ subroutine gener_pseudo
      !    unscreen the local potential and the D coefficients
      !
      call descreening
+!!     !edit
+!!     print *, "local potential"
+!!     print *, vpsloc(:)
   end if
   !
   !     print the main functions on files
@@ -637,6 +647,12 @@ subroutine gener_pseudo
      !
      ! end of Fourier analysis
      !
+  endif
+  
+  !second edit
+  if (pseudotype .eq. 3) then
+   print *, "second ouput of siesta"
+   call siesta_output(grid)
   endif
 
   write(stdout,"(/,5x,19('-'),' End of pseudopotential generation ',19('-'),/)")

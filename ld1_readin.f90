@@ -425,7 +425,7 @@ subroutine ld1_readin
            if (rcutnc2paw(ns) <= 0._dp) rcutnc2paw(ns)=rcut(ns)
         end do
      end if
-
+   !edit
   end if
   !
   !    reading input for PP testing

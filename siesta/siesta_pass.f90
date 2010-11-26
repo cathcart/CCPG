@@ -4,7 +4,8 @@
       use mesh, only: mesh_null, mesh_type
       !QE modules
       use radial_grids, only: radial_grid_type,ndmx
-      use ld1inc, only: zed,enne,zval,nwf,nn,ll,jj,el,rcut,octsc,enltsc,phis
+      use ld1inc, only: zed,enne,zval,nwf,nn,ll,jj,el,rcut,octsc,enltsc,&
+      phis,lloc,nbeta,rhos,pawsetup,enls,vpsloc,betas,rho
       use ld1_parameters, only: nwfx,nwfsx
 
       type ps_io_type
@@ -49,15 +50,15 @@
 !!      real(R8) :: nlcc_rc
 !!      real(R8), pointer :: rho_core(:)
 !!  
-!!      !Kleinman-Bylander projectors
-!!      logical :: have_kb
-!!      integer :: kb_l_local
-!!      integer :: kb_n_proj 
-!!      integer,  pointer :: kb_l(:)
-!!      real(R8), pointer :: kb_j(:)
-!!      real(R8), pointer :: kb_v_local(:)
-!!      real(R8), pointer :: kb_e(:)
-!!      real(R8), pointer :: kb_proj(:,:)
+      !Kleinman-Bylander projectors
+      logical :: have_kb!
+      integer :: kb_l_local!
+      integer :: kb_n_proj! 
+      integer,  pointer :: kb_l(:)
+      real(R8), pointer :: kb_j(:)
+      real(R8), pointer :: kb_v_local(:)!
+      real(R8), pointer :: kb_e(:)
+      real(R8), pointer :: kb_proj(:,:)!
       end type ps_io_type
  
       contains
@@ -131,12 +132,30 @@
        !here we are using the variale configuration occupation listing, just the first one though
        info%wfs_occ(:,1)=octsc(:,1)!pretend there's only a single spin channel
        allocate(info%wfs_ev(nwfsx))
-       info%wfs_ev(:)=enltsc(:,1)
+       !info%wfs_ev(:)=enltsc(:,1)
+       info%wfs_ev(:)=enls(:)
        allocate(info%wfs(ndmx,nwfsx))
        info%wfs(:,:)=phis(:,:)
        allocate(info%rho_val(ndmx))
-       info%rho_val=rhos(:,1)!rhos(ndmx,2), i guess this is up and down density. with nspin=1 only 1 channel here is nonzero
+       info%rho_val(:)=rhos(:,1)
+       !rhos(ndmx,2), i guess this is up and down density. with nspin=1 only 1 channel here is nonzero
        !(check this again later, i might have the wrong channel ^)
+
+       !set the projector stuff
+       info%have_kb=.true.
+       info%kb_l_local=lloc
+       info%kb_n_proj=nbeta
+       !allocate(info%kb_l(info%kb_n_proj))
+       !info%kb_l(:)=pawsetup%l(:)
+       allocate(info%kb_v_local(ndmax))
+       info%kb_v_local(:)=vpsloc(:)
+       allocate(info%kb_proj(ndmx,nwfsx))
+       info%kb_proj(:,:)=betas(:,:)
+       !test
+
+       print *, "projections"
+       print *, "mine"
+       print *, info%kb_proj
 
       endsubroutine ps_io_type_fill
       
