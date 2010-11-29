@@ -64,16 +64,21 @@
       end type ps_io_type
  
       contains
-
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!MAIN FUNCTION
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine siesta_output(grid_in)
-      type(radial_grid_type), intent(in):: grid_in
-      print *, "here's some siesta output"
-      call ps_io_type_fill(grid_in)
-      endsubroutine siesta_output
-
-      subroutine ps_io_type_fill(grid_in)
        type(radial_grid_type), intent(in):: grid_in
        type(ps_io_type) :: info
+       print *, "call the ps fill up routine"
+       call ps_io_type_fill(grid_in,info)
+       call ps_io_save(info)
+      endsubroutine siesta_output
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      subroutine ps_io_type_fill(grid_in,info)
+       type(radial_grid_type), intent(in) :: grid_in
+       type(ps_io_type) ,intent(out) :: info
        !mesh parameters
        type(mesh_type) :: m
        integer :: no_mesh_points,i,j
@@ -81,7 +86,7 @@
        !generalities
        character, external :: atom_name*2
 
-       info%file_format=M_SIESTA! remember to include the M_SIESTA etc definitions at the top of this file
+       info%file_format=M_SIESTA! these values are defined in the global.o file
 
        !set the mesh
        info%m%type=2!set the mesh type to LOG1 ri=b*exp(a*i)
@@ -185,7 +190,38 @@
        !this is the semi-local potential. we can also ignore this 
        !allocate(info%psp_v(,))
        !info%psp_v(,)
-
       endsubroutine ps_io_type_fill
+
+      subroutine ps_io_save(info)!this seems only necessary to setup the filename and assign io units
+      !-----------------------------------------------------------------------!
+      ! Writes the pseudo-atom information to a file so it can be used by     !
+      ! other codes.                                                          !
+      !-----------------------------------------------------------------------!
+      integer :: unit, iostat
+      character(len=20) :: filename
+      type(ps_io_type), intent(in) :: info
+  
+      !Open file
+      !call io_assign(unit)
+      unit=999!just make sure this is out of the range of the ld1x (seems to be ok though)
+      filename = trim(info%symbol)//'.psf'
+      open(unit, file=trim(filename), status='unknown', iostat=iostat)
+      if (iostat > 0) then
+        print *, "Error: something wrong with filename"
+        !write(message(1),'("Unable to open file ''",A,"''")') trim(filename)
+        call write_fatal(1)
+      end if
+  
+      !Write data to the file
+      !call siesta_save(unit, .false.)
+      write(unit,*) "This is siesta pseudo output"
+
+      close(unit)
+
+      end subroutine ps_io_save
+
+
+
+      
       
       end module siesta_pass

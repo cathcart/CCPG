@@ -63,6 +63,27 @@ module global
   logical :: in_debug_mode = .false.
   
   !something i put in here to cover the pointer size problem
-  integer ,parameter :: POINTER_SIZE = 8 
+  integer ,parameter :: POINTER_SIZE = 8
+
+  !some extra crap to keep siesta_pass nice and clean
+  integer, parameter :: HAM   = 1, &
+                        TM    = 2, &
+                        RTM   = 3, &
+                        MRPP  = 4
+
+  integer, parameter :: AVERAGED = 1, &
+                        J_DEP    = 2
+
+  integer, parameter :: SCHRODINGER = 1, &
+                        DIRAC       = 2, &
+                        SCALAR_REL  = 3
+
+  integer, parameter :: M_SIESTA  = 1, &
+                        M_FHI     = 2, &
+                        M_ABINIT5 = 3, &
+                        M_ABINIT6 = 4, &
+                        M_UPF     = 5, &
+                        M_PARSEC  = 6
+
 
 end module global

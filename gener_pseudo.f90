@@ -143,9 +143,6 @@ subroutine gener_pseudo
   do n=1,nwfs
      if (enls(n) == 0.0_dp) enls(n)=enl(nstoae(n))
   enddo
-  !edit
-  print *, "this is enls"
-  print *, enls(:)
   !
   ! Set the all-electron wavefunctions, calculating those at user supplied
   ! energies. The wavefunctions are written on file at this point, so
@@ -263,10 +260,6 @@ subroutine gener_pseudo
         call compute_chi(lam,ikk(ns),phis(1,ns),chis(1,ns),xc,enls(ns),lbes4)
      endif
   enddo
-!!  !edit
-!!  print *, "phis"
-!!  print *, phis(:,:)
-
   !      do n=1,mesh
   !         write(stdout,'(5e15.7)') r(n),psipsus(n,1),chis(n,1),
   !     +                            psipsus(n,2),chis(n,2)
@@ -468,9 +461,6 @@ subroutine gener_pseudo
      !    unscreen the local potential and the D coefficients
      !
      call descreening
-!!     !edit
-!!     print *, "local potential"
-!!     print *, vpsloc(:)
   end if
   !
   !     print the main functions on files
