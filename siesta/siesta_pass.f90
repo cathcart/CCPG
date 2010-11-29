@@ -5,7 +5,7 @@
       !QE modules
       use radial_grids, only: radial_grid_type,ndmx
       use ld1inc, only: zed,enne,zval,nwf,nn,ll,jj,el,rcut,octsc,enltsc,&
-      phis,lloc,nbeta,rhos,pawsetup,enls,vpsloc,betas,rho
+      phis,lloc,nbeta,rhos,pawsetup,enls,vpsloc,betas,rho,lls,isws
       use ld1_parameters, only: nwfx,nwfsx
 
       type ps_io_type
@@ -54,10 +54,10 @@
       logical :: have_kb!
       integer :: kb_l_local!
       integer :: kb_n_proj! 
-      integer,  pointer :: kb_l(:)
-      real(R8), pointer :: kb_j(:)
+      integer,  pointer :: kb_l(:)!
+      real(R8), pointer :: kb_j(:)!
       real(R8), pointer :: kb_v_local(:)!
-      real(R8), pointer :: kb_e(:)
+      real(R8), pointer :: kb_e(:)!
       real(R8), pointer :: kb_proj(:,:)!
       end type ps_io_type
  
@@ -151,11 +151,25 @@
        info%kb_v_local(:)=vpsloc(:)
        allocate(info%kb_proj(ndmx,nwfsx))
        info%kb_proj(:,:)=betas(:,:)
+       allocate(info%kb_l(nbeta))
+       info%kb_l=lls
+       allocate(info%kb_j(nbeta))
+       !just pretend that we can calculate this from j=l+/-s
+       do i=1,nbeta,1!most likly wrong all the s values are 1
+        info%kb_j(i)=lls(i)+isws(i)!isws is the spin of the pseudowavefunction
+       enddo
+       allocate(info%kb_e(nbeta))
+       !just pretend that we can calculate this from wfs_ev
+       do i=1,nbeta,1
+        info%kb_e(i)=info%wfs_ev(i)
+       enddo
        !test
 
        print *, "projections"
+       print *, "s"
+       print *, isws
        print *, "mine"
-       print *, info%kb_proj
+       print *, info%kb_e
 
       endsubroutine ps_io_type_fill
       
