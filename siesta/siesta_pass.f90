@@ -5,7 +5,8 @@
       !QE modules
       use radial_grids, only: radial_grid_type,ndmx
       use ld1inc, only: zed,enne,zval,nwf,nn,ll,jj,el,rcut,octsc,enltsc,&
-      phis,lloc,nbeta,rhos,pawsetup,enls,vpsloc,betas,rho,lls,isws
+      phis,lloc,nbeta,rhos,pawsetup,enls,vpsloc,betas,rho,lls,isws,nlcc,&
+      rhoc,rcore
       use ld1_parameters, only: nwfx,nwfsx
 
       type ps_io_type
@@ -42,14 +43,15 @@
       real(R8), pointer :: wfs(:,:)
       real(R8), pointer :: rho_val(:)
   
-!!      !XC
-!!      integer :: ixc
-!!  
-!!      !Non-linear core-corrections
-!!      logical :: nlcc
-!!      real(R8) :: nlcc_rc
-!!      real(R8), pointer :: rho_core(:)
-!!  
+      !XC
+      integer :: ixc!exchange correlation functional
+      !ape seems to only really allow certain combinations of X and C. set this as constant for now
+  
+      !Non-linear core-corrections
+      logical :: nlcc
+      real(R8) :: nlcc_rc
+      real(R8), pointer :: rho_core(:)
+  
       !Kleinman-Bylander projectors
       logical :: have_kb!
       integer :: kb_l_local!
@@ -163,13 +165,18 @@
        do i=1,nbeta,1
         info%kb_e(i)=info%wfs_ev(i)
        enddo
+
+       !set xc stuff
+       info%ixc=1!this should be set as a constant for now, check code later on to see how to integrate it properly
+       info%nlcc=nlcc
+       allocate(info%rho_core(ndmx))
+       info%rho_core(:)=rhoc(:)
+       info%nlcc_rc=rcore
        !test
 
-       print *, "projections"
-       print *, "s"
-       print *, isws
-       print *, "mine"
-       print *, info%kb_e
+       print *, "xc"
+       print *, info%nlcc
+       print *, info%rho_core
 
       endsubroutine ps_io_type_fill
       
