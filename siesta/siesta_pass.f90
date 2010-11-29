@@ -6,7 +6,7 @@
       use radial_grids, only: radial_grid_type,ndmx
       use ld1inc, only: zed,enne,zval,nwf,nn,ll,jj,el,rcut,octsc,enltsc,&
       phis,lloc,nbeta,rhos,pawsetup,enls,vpsloc,betas,rho,lls,isws,nlcc,&
-      rhoc,rcore
+      rhoc,rcore,nns,nwfs
       use ld1_parameters, only: nwfx,nwfsx
 
       type ps_io_type
@@ -22,14 +22,14 @@
       integer :: wave_eq
       integer :: nspin
       integer :: scheme
-!!  
-!!      !Pseudo potentials
-!!      logical :: have_psp
-!!      integer :: n_psp
-!!      integer,  pointer :: psp_l(:)
-!!      real(R8), pointer :: psp_j(:)
-!!      real(R8), pointer :: psp_v(:,:)
-!!  
+  
+      !Pseudo potentials
+      logical :: have_psp
+      integer :: n_psp!the number of pseudopotentials
+      integer,  pointer :: psp_l(:)
+      real(R8), pointer :: psp_j(:)
+      real(R8), pointer :: psp_v(:,:)
+  
       !Pseudo wavefunctions
       logical :: have_wfs
       integer :: n_wfs 
@@ -172,11 +172,19 @@
        allocate(info%rho_core(ndmx))
        info%rho_core(:)=rhoc(:)
        info%nlcc_rc=rcore
-       !test
 
-       print *, "xc"
-       print *, info%nlcc
-       print *, info%rho_core
+       !set pseudo_potentials
+       info%have_psp=.true.
+       info%n_psp=nwfs
+       allocate(info%psp_l(nwfs))
+       info%psp_l=lls(:nwfs)
+       allocate(info%psp_j(nwfs))
+       do i=1,nwfs,1
+       info%psp_j(i)=i!not needed for non spin polarised 
+       enddo
+       !this is the semi-local potential. we can also ignore this 
+       !allocate(info%psp_v(,))
+       !info%psp_v(,)
 
       endsubroutine ps_io_type_fill
       
