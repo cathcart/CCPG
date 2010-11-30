@@ -66,6 +66,7 @@ module global
   integer ,parameter :: POINTER_SIZE = 8
 
   !some extra crap to keep siesta_pass nice and clean
+  real, parameter :: PACKAGE_VERSION = 1.0
   integer, parameter :: HAM   = 1, &
                         TM    = 2, &
                         RTM   = 3, &

@@ -156,6 +156,8 @@ gener_pseudo.o : atomic_paw.o
 gener_pseudo.o : ld1inc.o
 gener_pseudo.o : parameters.o
 gener_pseudo.o : siesta_pass.a
+gener_pseudo.o : gsl_interface_f.o
+gener_pseudo.o : gsl_interface_c.o
 grad_log.o : ../Modules/kind.o
 green.o : ../Modules/kind.o
 green.o : ../Modules/radial_grids.o

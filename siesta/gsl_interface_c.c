@@ -47,7 +47,7 @@ void FC_FUNC_(gsl_strerror, GSL_STRERROR)
   char *c;
 
   c = gsl_strerror(*err);
-  TO_F_STR1(c, res);
+  /*TO_F_STR1(c, res);!!not too sure what this does*/
 }
 
 

@@ -135,7 +135,7 @@ MODULES = \
 ../PW/para.o \
 ../PW/startup.o 
 
-LD1LIBS=-lgsl -lcblas siesta_pass.a
+LD1LIBS=-lgsl -lgslcblas siesta_pass.a
 
 TLDEPS= bindir mods libs 
 

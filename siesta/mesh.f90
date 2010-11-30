@@ -21,7 +21,7 @@ module mesh
   use global
   !use oct_parser
   !use messages
-  use splines
+  use splines, only:spline_mesh_transfer
   !use units
   implicit none
 
@@ -65,21 +65,16 @@ module mesh
             mesh_generation, &
 !!            mesh_save, &
 !!            mesh_load, &
-            !mesh_transfer, &
+            mesh_transfer, &
 !!            mesh_output_params, &
             mesh_end, &
 !!            assignment(=), &
 !!            operator(==), &
             LOG1, &
             LIN, &
-            nothing, &
             LOG2
 
 contains
-  subroutine nothing()
-   print *, "call from mesh_nothing"
-  end subroutine nothing
-
   subroutine mesh_null(m)
     !-----------------------------------------------------------------------!
     ! Nullifies and sets to zero all the components of mesh m.              !
@@ -368,30 +363,31 @@ contains
 !!    !call pop_sub()
 !!  end subroutine mesh_load
 !!
-!!!  subroutine mesh_transfer(m_a, fa, m_b, fb, interp_type)
-!!!    !-----------------------------------------------------------------------!
-!!!    ! Having a function on a mesh m_a, this routines returns the values of  !
-!!!    ! that function on a mesh m_b, by interpolating the function.           !
-!!!    !                                                                       !
-!!!    !  m_a         - mesh m_a                                               !
-!!!    !  fa          - values of the function on mesh A                       !
-!!!    !  x_b         - mesh m_b                                               !
-!!!    !  fa          - values of the function on mesh A                       !
-!!!    !  interp_type - interpolation type                                     !
-!!!    !-----------------------------------------------------------------------!
-!!!    type(mesh_type), intent(in)  :: m_a, m_b
-!!!    real(R8),        intent(in)  :: fa(m_a%np)
-!!!    real(R8),        intent(out) :: fb(m_b%np)
-!!!    integer,         intent(in)  :: interp_type
-!!!
-!!!    !call push_sub("mesh_transfer")
-!!!
-!!!    !ASSERT(m_a%type /= 0 .and. m_b%type /= 0)
-!!!
-!!!    call spline_mesh_transfer(m_a%np, m_a%r, fa, m_b%np, m_b%r, fb, interp_type)
-!!!
-!!!    !call pop_sub()
-!!!  end subroutine mesh_transfer
+  subroutine mesh_transfer(m_a, fa, m_b, fb, interp_type)
+    !-----------------------------------------------------------------------!
+    ! Having a function on a mesh m_a, this routines returns the values of  !
+    ! that function on a mesh m_b, by interpolating the function.           !
+    !                                                                       !
+    !  m_a         - mesh m_a                                               !
+    !  fa          - values of the function on mesh A                       !
+    !  x_b         - mesh m_b                                               !
+    !  fa          - values of the function on mesh A                       !
+    !  interp_type - interpolation type                                     !
+    !-----------------------------------------------------------------------!
+    type(mesh_type), intent(in)  :: m_a, m_b
+    real(R8),        intent(in)  :: fa(m_a%np)
+    real(R8),        intent(out) :: fb(m_b%np)
+    integer,         intent(in)  :: interp_type
+
+    !call push_sub("mesh_transfer")
+    fb=fa
+
+    !ASSERT(m_a%type /= 0 .and. m_b%type /= 0)!this is simply a check, if the expression is true then kill the program
+
+    call spline_mesh_transfer(m_a%np, m_a%r, fa, m_b%np, m_b%r, fb, interp_type)
+
+    !call pop_sub()
+  end subroutine mesh_transfer
 !!
 !!  subroutine mesh_output_params(m, unit, verbose_limit)
 !!    !-----------------------------------------------------------------------!

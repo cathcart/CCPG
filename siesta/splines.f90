@@ -24,15 +24,15 @@ module splines
   implicit none
 
 
-                    !---Interfaces---!
-
-  interface assignment (=)
-     module procedure copy_splines
-  end interface
-
-  interface operator (==)
-     module procedure equal_splines
-  end interface
+!!                    !---Interfaces---!
+!!
+!!  interface assignment (=)
+!!     module procedure copy_splines
+!!  end interface
+!!
+!!  interface operator (==)
+!!     module procedure equal_splines
+!!  end interface
 
 
                     !---Derived Data Types---!
@@ -55,20 +55,20 @@ module splines
                     !---Public/Private Statements---!
 
   private
-  public :: spline_type, &
-            spline_null, &
-            spline_init, &
-            assignment(=), &
-            operator(==), &
-            spline_end, &
-            spline_eval, &
-            spline_eval_deriv, &
-            spline_eval_deriv2, &
-            spline_eval_integ, &
-            spline_integ, &
-            spline_deriv, &
-            spline_deriv2, &
-            spline_mesh_transfer
+!!  public :: spline_type, &
+!!            spline_null, &
+!!            spline_init, &
+!!            assignment(=), &
+!!            operator(==), &
+!!            spline_end, &
+!!            spline_eval, &
+!!            spline_eval_deriv, &
+!!            spline_eval_deriv2, &
+!!            spline_eval_integ, &
+!!            spline_integ, &
+!!            spline_deriv, &
+!!            spline_deriv2, &
+  public ::   spline_mesh_transfer
 
 
 contains
@@ -125,39 +125,39 @@ contains
 
   end subroutine spline_init
 
-  subroutine copy_splines(spline_a, spline_b)
-    !-----------------------------------------------------------------------!
-    ! Makes spline_a equal to spline_b. That is done by making both splines !
-    ! component info point to the same interpolation information.           !
-    !-----------------------------------------------------------------------!
-    type(spline_type), intent(inout) :: spline_a
-    type(spline_type), intent(in)    :: spline_b
-
-    !ASSERT(associated(spline_b%info))
-
-    !Deallocate the memory previously assigned to spline_a
-    call spline_end(spline_a)
-
-    !Make spline_a point to the same interpolation info than spline_b
-    spline_a%info => spline_b%info
-
-    !Now we have an addicional pointer to the spline information
-    spline_a%info%n_ptrs = spline_a%info%n_ptrs + 1
-
-  end subroutine copy_splines
-
-  function equal_splines(spline_a, spline_b)
-    !-----------------------------------------------------------------------!
-    ! Returns true if spline_a and spline_b interpolation objects are equal.!
-    ! Returns false if they are not.                                        !
-    !-----------------------------------------------------------------------!
-    type(spline_type), intent(in) :: spline_a, spline_b
-    logical :: equal_splines
-
-    equal_splines = associated(spline_a%info, spline_b%info)
-
-  end function equal_splines
-
+!!  subroutine copy_splines(spline_a, spline_b)
+!!    !-----------------------------------------------------------------------!
+!!    ! Makes spline_a equal to spline_b. That is done by making both splines !
+!!    ! component info point to the same interpolation information.           !
+!!    !-----------------------------------------------------------------------!
+!!    type(spline_type), intent(inout) :: spline_a
+!!    type(spline_type), intent(in)    :: spline_b
+!!
+!!    !ASSERT(associated(spline_b%info))
+!!
+!!    !Deallocate the memory previously assigned to spline_a
+!!    call spline_end(spline_a)
+!!
+!!    !Make spline_a point to the same interpolation info than spline_b
+!!    spline_a%info => spline_b%info
+!!
+!!    !Now we have an addicional pointer to the spline information
+!!    spline_a%info%n_ptrs = spline_a%info%n_ptrs + 1
+!!
+!!  end subroutine copy_splines
+!!
+!!  function equal_splines(spline_a, spline_b)
+!!    !-----------------------------------------------------------------------!
+!!    ! Returns true if spline_a and spline_b interpolation objects are equal.!
+!!    ! Returns false if they are not.                                        !
+!!    !-----------------------------------------------------------------------!
+!!    type(spline_type), intent(in) :: spline_a, spline_b
+!!    logical :: equal_splines
+!!
+!!    equal_splines = associated(spline_a%info, spline_b%info)
+!!
+!!  end function equal_splines
+!!
   subroutine spline_end(spline)
     !-----------------------------------------------------------------------!
     ! Frees the interpolation object spline.                                !
@@ -172,7 +172,7 @@ contains
       else
         !This is the only pointer pointing to this spline information
         call gsl_spline_free(spline%info%spl)
-        call gsl_interp_accel_free(spline%info%acc)
+        !!call gsl_interp_accel_free(spline%info%acc)
         deallocate(spline%info)
       end if
     end if
@@ -193,131 +193,131 @@ contains
     spline_eval = gsl_spline_eval(x, spline%info%spl, spline%info%acc)
  
   end function spline_eval
-
-  function spline_eval_deriv(spline, x)
-    !-----------------------------------------------------------------------!
-    ! Returns the derivative of an interpolated function for a given point. !
-    !                                                                       !
-    !  spline            - interpolation object                             !
-    !  x                 - point where to evaluate the derivative           ! 
-    !-----------------------------------------------------------------------!
-    type(spline_type), intent(in) :: spline
-    real(R8),          intent(in) :: x
-    real(R8) :: spline_eval_deriv
-    
-    spline_eval_deriv = gsl_spline_eval_deriv(x, spline%info%spl, spline%info%acc)
- 
-  end function spline_eval_deriv
-
-  function spline_eval_deriv2(spline, x)
-    !-----------------------------------------------------------------------!
-    ! Returns the second derivative of an interpolated function for a given !
-    ! point.                                                                !
-    !                                                                       !
-    !  spline            - interpolation object                             !
-    !  x                 - point where to evaluate the second derivativ     !
-    !-----------------------------------------------------------------------!
-    type(spline_type), intent(in) :: spline
-    real(R8),          intent(in) :: x
-    real(R8) :: spline_eval_deriv2
-    
-    spline_eval_deriv2 = gsl_spline_eval_deriv2(x, spline%info%spl, spline%info%acc)
- 
-  end function spline_eval_deriv2
-
-  function spline_eval_integ(spline, a, b)
-    !-----------------------------------------------------------------------!
-    ! Returns the numerical integral of an interpolated function over the   !
-    ! range [a,b].                                                          !
-    !                                                                       !
-    !  spline - interpolation object                                        !
-    !  a, b   - upper and lower integration bounds                          !
-    !-----------------------------------------------------------------------!
-    type(spline_type), intent(in) :: spline
-    real(R8),          intent(in) :: a, b
-    real(R8) :: spline_eval_integ
-
-    spline_eval_integ = gsl_spline_eval_integ(a, b, spline%info%spl, spline%info%acc)
- 
-  end function spline_eval_integ
-
-  function spline_integ(np, x, y, a, b, interp_type)
-    !-----------------------------------------------------------------------!
-    ! Returns the numerical integral of a function over the range [1,] by   !
-    ! interpolating a set of data points.                                   !
-    !                                                                       !
-    !  np          - number of data points                                  !
-    !  x           - x coordinates of the data points                       !
-    !  y           - y coordinates of the data points                       !
-    !  a, b        - upper and lower integration bounds                     !
-    !  interp_type - interpolation type                                     !
-    !-----------------------------------------------------------------------!
-    integer,  intent(in) :: np, interp_type
-    real(R8), intent(in) :: x(np), y(np)
-    real(R8), intent(in) :: a, b
-    real(R8) :: spline_integ
-
-    type(spline_type) :: spl
-    
-    call spline_null(spl)
-    call spline_init(spl, np, x, y, interp_type)
-    spline_integ = spline_eval_integ(spl, a, b)
-    call spline_end(spl)
-
-  end function spline_integ
-
-  function spline_deriv(np, x, y, interp_type)
-    !-----------------------------------------------------------------------!
-    ! Returns the numerical derivative of a function by interpolating a set !
-    ! of data points.                                                       !
-    !                                                                       !
-    !  np          - number of data points                                  !
-    !  x           - x coordinates of the data points                       !
-    !  y           - y coordinates of the data points                       !
-    !  interp_type - interpolation type                                     !
-    !-----------------------------------------------------------------------!
-    integer,  intent(in)  :: np, interp_type
-    real(R8), intent(in)  :: x(np), y(np)
-    real(R8) :: spline_deriv(np)
-
-    integer :: i
-    type(spline_type) :: spl
-    
-    call spline_null(spl)
-    call spline_init(spl, np, x, y, interp_type)
-    do i = 1, np
-      spline_deriv(i) = spline_eval_deriv(spl, x(i))
-    end do
-    call spline_end(spl)
-
-  end function spline_deriv
-
-  function spline_deriv2(np, x, y, interp_type)
-    !-----------------------------------------------------------------------!
-    ! Returns the numerical second derivative of a function by              !
-    ! interpolating a set of data points.                                   !
-    !                                                                       !
-    !  np          - number of data points                                  !
-    !  x           - x coordinates of the data points                       !
-    !  y           - y coordinates of the data points                       !
-    !  interp_type - interpolation type                                     !
-    !  d2ydx2      - second derivative of y(x)                              !
-    !-----------------------------------------------------------------------!
-    integer,  intent(in)  :: np, interp_type
-    real(R8), intent(in)  :: x(np), y(np)
-    real(R8) :: spline_deriv2(np)
-
-    integer :: i
-    type(spline_type) :: spl
-    
-    call spline_null(spl)
-    call spline_init(spl, np, x, y, interp_type)
-    do i = 1, np
-      spline_deriv2(i) = spline_eval_deriv2(spl, x(i))
-    end do
-    call spline_end(spl)
-
-  end function spline_deriv2
+!!
+!!  function spline_eval_deriv(spline, x)
+!!    !-----------------------------------------------------------------------!
+!!    ! Returns the derivative of an interpolated function for a given point. !
+!!    !                                                                       !
+!!    !  spline            - interpolation object                             !
+!!    !  x                 - point where to evaluate the derivative           ! 
+!!    !-----------------------------------------------------------------------!
+!!    type(spline_type), intent(in) :: spline
+!!    real(R8),          intent(in) :: x
+!!    real(R8) :: spline_eval_deriv
+!!    
+!!    spline_eval_deriv = gsl_spline_eval_deriv(x, spline%info%spl, spline%info%acc)
+!! 
+!!  end function spline_eval_deriv
+!!
+!!  function spline_eval_deriv2(spline, x)
+!!    !-----------------------------------------------------------------------!
+!!    ! Returns the second derivative of an interpolated function for a given !
+!!    ! point.                                                                !
+!!    !                                                                       !
+!!    !  spline            - interpolation object                             !
+!!    !  x                 - point where to evaluate the second derivativ     !
+!!    !-----------------------------------------------------------------------!
+!!    type(spline_type), intent(in) :: spline
+!!    real(R8),          intent(in) :: x
+!!    real(R8) :: spline_eval_deriv2
+!!    
+!!    spline_eval_deriv2 = gsl_spline_eval_deriv2(x, spline%info%spl, spline%info%acc)
+!! 
+!!  end function spline_eval_deriv2
+!!
+!!  function spline_eval_integ(spline, a, b)
+!!    !-----------------------------------------------------------------------!
+!!    ! Returns the numerical integral of an interpolated function over the   !
+!!    ! range [a,b].                                                          !
+!!    !                                                                       !
+!!    !  spline - interpolation object                                        !
+!!    !  a, b   - upper and lower integration bounds                          !
+!!    !-----------------------------------------------------------------------!
+!!    type(spline_type), intent(in) :: spline
+!!    real(R8),          intent(in) :: a, b
+!!    real(R8) :: spline_eval_integ
+!!
+!!    spline_eval_integ = gsl_spline_eval_integ(a, b, spline%info%spl, spline%info%acc)
+!! 
+!!  end function spline_eval_integ
+!!
+!!  function spline_integ(np, x, y, a, b, interp_type)
+!!    !-----------------------------------------------------------------------!
+!!    ! Returns the numerical integral of a function over the range [1,] by   !
+!!    ! interpolating a set of data points.                                   !
+!!    !                                                                       !
+!!    !  np          - number of data points                                  !
+!!    !  x           - x coordinates of the data points                       !
+!!    !  y           - y coordinates of the data points                       !
+!!    !  a, b        - upper and lower integration bounds                     !
+!!    !  interp_type - interpolation type                                     !
+!!    !-----------------------------------------------------------------------!
+!!    integer,  intent(in) :: np, interp_type
+!!    real(R8), intent(in) :: x(np), y(np)
+!!    real(R8), intent(in) :: a, b
+!!    real(R8) :: spline_integ
+!!
+!!    type(spline_type) :: spl
+!!    
+!!    call spline_null(spl)
+!!    call spline_init(spl, np, x, y, interp_type)
+!!    spline_integ = spline_eval_integ(spl, a, b)
+!!    call spline_end(spl)
+!!
+!!  end function spline_integ
+!!
+!!  function spline_deriv(np, x, y, interp_type)
+!!    !-----------------------------------------------------------------------!
+!!    ! Returns the numerical derivative of a function by interpolating a set !
+!!    ! of data points.                                                       !
+!!    !                                                                       !
+!!    !  np          - number of data points                                  !
+!!    !  x           - x coordinates of the data points                       !
+!!    !  y           - y coordinates of the data points                       !
+!!    !  interp_type - interpolation type                                     !
+!!    !-----------------------------------------------------------------------!
+!!    integer,  intent(in)  :: np, interp_type
+!!    real(R8), intent(in)  :: x(np), y(np)
+!!    real(R8) :: spline_deriv(np)
+!!
+!!    integer :: i
+!!    type(spline_type) :: spl
+!!    
+!!    call spline_null(spl)
+!!    call spline_init(spl, np, x, y, interp_type)
+!!    do i = 1, np
+!!      spline_deriv(i) = spline_eval_deriv(spl, x(i))
+!!    end do
+!!    call spline_end(spl)
+!!
+!!  end function spline_deriv
+!!
+!!  function spline_deriv2(np, x, y, interp_type)
+!!    !-----------------------------------------------------------------------!
+!!    ! Returns the numerical second derivative of a function by              !
+!!    ! interpolating a set of data points.                                   !
+!!    !                                                                       !
+!!    !  np          - number of data points                                  !
+!!    !  x           - x coordinates of the data points                       !
+!!    !  y           - y coordinates of the data points                       !
+!!    !  interp_type - interpolation type                                     !
+!!    !  d2ydx2      - second derivative of y(x)                              !
+!!    !-----------------------------------------------------------------------!
+!!    integer,  intent(in)  :: np, interp_type
+!!    real(R8), intent(in)  :: x(np), y(np)
+!!    real(R8) :: spline_deriv2(np)
+!!
+!!    integer :: i
+!!    type(spline_type) :: spl
+!!    
+!!    call spline_null(spl)
+!!    call spline_init(spl, np, x, y, interp_type)
+!!    do i = 1, np
+!!      spline_deriv2(i) = spline_eval_deriv2(spl, x(i))
+!!    end do
+!!    call spline_end(spl)
+!!
+!!  end function spline_deriv2
 
   subroutine spline_mesh_transfer(np_a, x_a, y_a, np_b, x_b, y_b, interp_type)
     !-----------------------------------------------------------------------!

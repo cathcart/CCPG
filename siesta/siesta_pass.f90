@@ -1,7 +1,7 @@
       module siesta_pass
       !APE modules (modified)
       use global
-      use mesh, only: mesh_null, mesh_type, mesh_generation, mesh_end
+      use mesh, only: mesh_null, mesh_type, mesh_generation, mesh_end, mesh_transfer
       !QE modules
       use radial_grids, only: radial_grid_type,ndmx
       use ld1inc, only: zed,enne,zval,nwf,nn,ll,jj,el,rcut,octsc,enltsc,&
@@ -72,6 +72,8 @@
        type(ps_io_type) :: info
        print *, "call the ps fill up routine"
        call ps_io_type_fill(grid_in,info)
+       print *, "core charge"
+       print *, info%rho_core(1)
        call ps_io_save(info)
       endsubroutine siesta_output
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -214,7 +216,6 @@
   
       !Write data to the file
       call siesta_save(unit, .false.,info)
-      write(unit,*) "This is siesta pseudo output"
 
       close(unit)
 
@@ -266,7 +267,7 @@
     end select
       
     call date_and_time(values=values)
-    write(header,'(A,A,3X,I4.4,"/",I2.2,"/",I2.2)') "APE Version-", PACKAGE_VERSION, values(1), values(2), values(3)
+    write(header,'(A,A,3X,I4.4,"/",I2.2,"/",I2.2)') "APE-QE Version-", PACKAGE_VERSION, values(1), values(2), values(3)
     select case (info%scheme)
     case (HAM)
       header = trim(header)//"   Hamann"
@@ -291,6 +292,7 @@
         if (info%wfs_n(i) == n .and. info%wfs_l(i) == l .and. info%wfs_j(i) == j) then
           select case (irel)
           case('nrl')
+            write(title,'(A)') (title)
             write(title,'(A)') trim(title)
             write(title,'(A,A2,F5.2,"  r=",F5.2,"/")') trim(title), &
                             info%wfs_label(i), info%wfs_occ(i, 1), info%wfs_rc(i)
@@ -334,89 +336,89 @@
         j = M_ZERO
       end if
 
-!!      do i = 1, info%n_psp
-!!        if (info%psp_l(i) == l .and. info%psp_j(i) == j) then
-!!          write(unit,'(" Down Pseudopotential follows (l on next line)")')
-!!          write(unit,'(1X,I2)') info%psp_l(i)
-!!          
-!!          call mesh_transfer(info%m, info%psp_v(:, i), new_m, dum, 3)
-!!          where (abs(dum) < 1.0E-30)
-!!            dum = M_ZERO
-!!          end where
-!!          write(unit,'(4(g20.12))') (dum(ir)*new_m%r(ir)*M_TWO, ir = 1, new_m%np)
-!!        end if
-!!      end do
+      do i = 1, info%n_psp
+        if (info%psp_l(i) == l .and. info%psp_j(i) == j) then
+          write(unit,'(" Down Pseudopotential follows (l on next line)")')
+          write(unit,'(1X,I2)') info%psp_l(i)
+          
+          call mesh_transfer(info%m, info%psp_v(:, i), new_m, dum, 3)
+          where (abs(dum) < 1.0E-30)
+            dum = M_ZERO
+          end where
+          write(unit,'(4(g20.12))') (dum(ir)*new_m%r(ir)*M_TWO, ir = 1, new_m%np)
+        end if
+      end do
     end do
-!!
-!!    !Up pseudopotentials
-!!    if (n_up /= 0) then
-!!      do l = 0, 3
-!!        do i = 1, info%n_psp
-!!          if (l /= 0 .and. info%wave_eq == DIRAC) then
-!!            j = l + M_HALF
-!!          else
-!!            j = M_ZERO
-!!          end if
-!!          
-!!          if (info%psp_l(i) == l .and. info%psp_j(i) == j) then
-!!            write(unit,'(" Up Pseudopotential follows (l on next line)")')
-!!            write(unit,'(1X,I2)') info%psp_l(i)
-!!          
-!!            call mesh_transfer(info%m, info%psp_v(:, i), new_m, dum, 3)
-!!            where (abs(dum) < 1.0E-30)
-!!              dum = M_ZERO
-!!            end where
-!!            write(unit,'(4(g20.12))') (dum(ir)*new_m%r(ir)*M_TWO, ir = 1, new_m%np)
-!!          end if
-!!        end do
-!!      end do
-!!    end if
-!!
-!!    !Write core charge
-!!    write(unit,'(" Core charge follows")')
-!!    if (icore == "nc  ") then
-!!      dum = M_ZERO
-!!    else
-!!      call mesh_transfer(info%m, info%rho_core, new_m, dum, 3)
-!!      where (abs(dum) < 1.0E-30)
-!!        dum = M_ZERO
-!!      elsewhere
-!!        dum = new_m%r**2*M_FOUR*M_PI*dum
-!!      end where
-!!    end if
-!!    write(unit,'(4(g20.12))') (dum(i), i = 1, new_m%np)
-!!
-!!    !Write valence charge
-!!    write(unit,'(" Valence charge follows")')
-!!    call mesh_transfer(info%m, info%rho_val, new_m, dum, 3)
-!!    where (abs(dum) < 1.0E-30)
-!!      dum = M_ZERO
-!!    end where
-!!    write(unit,'(4(g20.12))') (dum(i)*new_m%r(i)**2*M_FOUR*M_PI, i = 1, new_m%np)
-!!
-!!    if (parsec) then
-!!      !Write pseudo-wave-functions
-!!      do l = 0, 3
-!!        n = minval(info%wfs_n, mask=info%wfs_l == l)
-!!        j = minval(info%wfs_j, mask=(info%wfs_l == l .and. info%wfs_n == n))
-!!
-!!        do i = 1, info%n_wfs
-!!          if (info%wfs_n(i) == n .and. info%wfs_l(i) == l .and. info%wfs_j(i) == j) then
-!!
-!!            call mesh_transfer(info%m, info%wfs(:, i), new_m, dum, 3)
-!!
-!!            write(unit,'(1X,A,A2)') 'Pseudo-wave-function follows (l, zelect, rc)  ',info%wfs_label(i)
-!!            write(unit,'(I2,F6.2,2X,F6.2)') info%wfs_l(i), &
-!!                 info%wfs_occ(i, 1), info%wfs_rc(i)
-!!            write(unit,'(1P4E19.11)') (dum(ir)*new_m%r(ir), ir = 1, new_m%np)
-!!
-!!          end if
-!!        end do
-!!
-!!      end do
-!!    end if
-!!    
-!!    deallocate(dum)
+
+    !Up pseudopotentials
+    if (n_up /= 0) then
+      do l = 0, 3
+        do i = 1, info%n_psp
+          if (l /= 0 .and. info%wave_eq == DIRAC) then
+            j = l + M_HALF
+          else
+            j = M_ZERO
+          end if
+          
+          if (info%psp_l(i) == l .and. info%psp_j(i) == j) then
+            write(unit,'(" Up Pseudopotential follows (l on next line)")')
+            write(unit,'(1X,I2)') info%psp_l(i)
+          
+            call mesh_transfer(info%m, info%psp_v(:, i), new_m, dum, 3)
+            where (abs(dum) < 1.0E-30)
+              dum = M_ZERO
+            end where
+            write(unit,'(4(g20.12))') (dum(ir)*new_m%r(ir)*M_TWO, ir = 1, new_m%np)
+          end if
+        end do
+      end do
+    end if
+
+    !Write core charge
+    write(unit,'(" Core charge follows")')
+    if (icore == "nc  ") then
+      dum = M_ZERO
+    else
+      call mesh_transfer(info%m, info%rho_core, new_m, dum, 3)
+      where (abs(dum) < 1.0E-30)
+        dum = M_ZERO
+      elsewhere
+        dum = new_m%r**2*M_FOUR*M_PI*dum
+      end where
+    end if
+    write(unit,'(4(g20.12))') (dum(i), i = 1, new_m%np)
+
+    !Write valence charge
+    write(unit,'(" Valence charge follows")')
+    call mesh_transfer(info%m, info%rho_val, new_m, dum, 3)
+    where (abs(dum) < 1.0E-30)
+      dum = M_ZERO
+    end where
+    write(unit,'(4(g20.12))') (dum(i)*new_m%r(i)**2*M_FOUR*M_PI, i = 1, new_m%np)
+
+    if (parsec) then
+      !Write pseudo-wave-functions
+      do l = 0, 3
+        n = minval(info%wfs_n, mask=info%wfs_l == l)
+        j = minval(info%wfs_j, mask=(info%wfs_l == l .and. info%wfs_n == n))
+
+        do i = 1, info%n_wfs
+          if (info%wfs_n(i) == n .and. info%wfs_l(i) == l .and. info%wfs_j(i) == j) then
+
+            call mesh_transfer(info%m, info%wfs(:, i), new_m, dum, 3)
+
+            write(unit,'(1X,A,A2)') 'Pseudo-wave-function follows (l, zelect, rc)  ',info%wfs_label(i)
+            write(unit,'(I2,F6.2,2X,F6.2)') info%wfs_l(i), &
+                 info%wfs_occ(i, 1), info%wfs_rc(i)
+            write(unit,'(1P4E19.11)') (dum(ir)*new_m%r(ir), ir = 1, new_m%np)
+
+          end if
+        end do
+
+      end do
+    end if
+    
+    deallocate(dum)
     call mesh_end(new_m)
     
   end subroutine siesta_save
