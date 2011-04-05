@@ -108,7 +108,7 @@ subroutine gener_pseudo
           '(/,5x,21(''-''),'' Generating SIESTA pseudopotential '',21(''-''),/)')
      !call siesta_output(grid)
      !print *, phis(:,:)
-     pseudotype =1
+     pseudotype =2
   else
      call errore('gener_pseudo','pseudotype not programmed',1)
   endif
@@ -640,12 +640,8 @@ subroutine gener_pseudo
   endif
   
   !second edit
-  if (pseudotype .eq. 1) then
+  if (pseudotype .eq. 2) then
    print *, "second ouput of siesta"
-   do ns=0,3
-   print *, ns
-   print *, vnl(1:10,:,ns)
-   enddo
    call siesta_output(grid)
   endif
 

@@ -85,6 +85,11 @@ module global
                         M_ABINIT6 = 4, &
                         M_UPF     = 5, &
                         M_PARSEC  = 6
+  !Mesh types
+  integer, parameter :: LIN  = 1, &
+                        LOG1 = 2, &
+                        LOG2 = 3
+
 
 
 end module global

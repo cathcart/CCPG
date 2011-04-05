@@ -189,12 +189,9 @@
        do i=1,nwfs,1
        info%psp_j(i)=M_ZERO!not needed for non spin polarised 
        enddo
-       !this is the semi-local potential. we can also ignore this 
        allocate(info%psp_v(ndmx,4))
-       do l=0,3,1
-       do ir=1,ndmx
-       info%psp_v(ir,l)=(vnl(ir,l,1)+vpsloc(ir))
-       enddo
+       do i=1,nwfs,1
+       info%psp_v(:,i)=9.0
        enddo
       endsubroutine ps_io_type_fill
 
@@ -317,7 +314,13 @@
 
     !Mesh
     call mesh_null(new_m)
+    print *, "check mesh stuff before running"
+    print *, info%m%r(1)
+    print *, info%m%r(info%m%np)
+    print *, info%m%np
     call mesh_generation(new_m, LOG2, info%m%r(1), info%m%r(info%m%np), info%m%np) 
+    print *, "This is the new mesh"
+    print *, (new_m%r(i),i = 1, new_m%np)
     
     !General info
     !write(unit,'(1X,A2,1X,A2,1X,A3,1X,A4)') info%symbol(1:2), ixc_to_icorr(info%ixc), irel, icore! we have a problem with ixc
@@ -329,7 +332,8 @@
     !Write radial grid
     write(unit,'(" Radial grid follows")')
     write(unit,'(4(g20.12))') (new_m%r(i),i = 1, new_m%np)
-
+    !print *, "This is the old mesh"
+    !print *, (info%m%r(i),i = 1, new_m%np)
     allocate(dum(new_m%np))
 
     !Down pseudopotentials

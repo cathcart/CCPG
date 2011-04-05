@@ -20,7 +20,7 @@ include make.depend
 LIBRARY_OBJS=$(SUB_DIR_OBJECTS) $(MODULES)
 
 siesta_pass.a:$(SUB_DIR_OBJECTS)
-	ar rc siesta_pass.a $(LIBRARY_OBJS);cp siesta_pass.a ../.;cp *.o ../.;cp *.mod ../.
+	ar rc siesta_pass.a $(LIBRARY_OBJS);cp siesta_pass.a ../.;cp *.o ../.;cp *.mod ../. 
 
 $(BUILDDIR)/%:%.o
 	$(FC) $(FCFLAGS) -o $@ $(LIBRARIES) $(MODULES) $^
