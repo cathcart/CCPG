@@ -190,7 +190,6 @@ contains
     real(R8) :: a1, a2, n1, n2, am, nm, f1, fm
 
     !call push_sub("mesh_generation")
-    print *, "hello from mesh generation"
 
     !Check optional arguments
     if (present(n) .and. present(a)) then
@@ -200,8 +199,6 @@ contains
     end if
 
     !Set the mesh type, the number of points, the first point and the parameter a
-    print *, "this is the mesh type"
-    print *, type
     m%type = type
     if (present(n)) then
       m%np = n
@@ -213,7 +210,6 @@ contains
       case (LOG1)
         m%a = log(rn/r1)/real(n - 1,R8)
       case (LOG2)
-        print *, "yes, we're calling this mesh type"
         a1 = 1.0e-8_r8
         f1 = func(r1, rn, real(n,R8), a1)
         a2 = M_ONE

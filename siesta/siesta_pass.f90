@@ -6,7 +6,7 @@
       use radial_grids, only: radial_grid_type,ndmx
       use ld1inc, only: zed,enne,zval,nwf,nn,ll,jj,el,rcut,octsc,enltsc,&
       phis,lloc,nbeta,rhos,pawsetup,enls,vpsloc,betas,rho,lls,isws,nlcc,&
-      rhoc,rcore,nns,nwfs,vnl
+      rhoc,rcore,nns,nwfs,vnl,ikk
       use ld1_parameters, only: nwfx,nwfsx
 
       type ps_io_type
@@ -83,7 +83,7 @@
        type(ps_io_type) ,intent(out) :: info
        !mesh parameters
        type(mesh_type) :: m
-       integer :: no_mesh_points,i,j,l,ir
+       integer :: no_mesh_points,i,j,l,ir,ns,lam,n
        real(R8) :: rn,r1
        !generalities
        character, external :: atom_name*2
@@ -190,9 +190,25 @@
        info%psp_j(i)=M_ZERO!not needed for non spin polarised 
        enddo
        allocate(info%psp_v(ndmx,4))
-       do i=1,nwfs,1
-       info%psp_v(:,i)=9.0
+
+       do ns=1,nbeta
+         lam=lls(ns)
+         do n=1,ikk(ns)
+           !something
+           info%psp_v(n,lam)= (vnl(n,lam,1)+vpsloc(n))
+         enddo
        enddo
+
+!       do l=0,4
+!       !do ir=1,ndmx
+!       do ir=1,ndmx
+!       !!it should always be vnl(:,l,1), i.e. non relativistic
+!       !info%psp_v(ir,l)= (vnl(ir,l,2)+vpsloc(ir)*0.5)
+!       !info%psp_v(ir,l)= (vpsloc(ir)*0.5)
+!       !info%psp_v(ir,l)= (vnl(ir,l,2))
+!       info%psp_v(ir,l)= m%r(ir)*(vnl(ir,l,1)+vpsloc(ir))
+!       enddo
+!       enddo
       endsubroutine ps_io_type_fill
 
       subroutine ps_io_save(info)!this seems only necessary to setup the filename and assign io units
@@ -314,13 +330,7 @@
 
     !Mesh
     call mesh_null(new_m)
-    print *, "check mesh stuff before running"
-    print *, info%m%r(1)
-    print *, info%m%r(info%m%np)
-    print *, info%m%np
     call mesh_generation(new_m, LOG2, info%m%r(1), info%m%r(info%m%np), info%m%np) 
-    print *, "This is the new mesh"
-    print *, (new_m%r(i),i = 1, new_m%np)
     
     !General info
     !write(unit,'(1X,A2,1X,A2,1X,A3,1X,A4)') info%symbol(1:2), ixc_to_icorr(info%ixc), irel, icore! we have a problem with ixc
@@ -332,8 +342,6 @@
     !Write radial grid
     write(unit,'(" Radial grid follows")')
     write(unit,'(4(g20.12))') (new_m%r(i),i = 1, new_m%np)
-    !print *, "This is the old mesh"
-    !print *, (info%m%r(i),i = 1, new_m%np)
     allocate(dum(new_m%np))
 
     !Down pseudopotentials
