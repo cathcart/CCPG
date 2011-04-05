@@ -191,11 +191,13 @@
        enddo
        allocate(info%psp_v(ndmx,4))
 
-       do ns=1,nbeta
-         lam=lls(ns)
-         do n=1,ikk(ns)
+       !do ns=1,nbeta
+         !lam=lls(ns)
+         !do n=1,ikk(ns)
+         do lam=0,4
+         do n=1,ndmx
            !something
-           info%psp_v(n,lam)= (vnl(n,lam,1)+vpsloc(n))
+           info%psp_v(n,lam)= (vnl(n,lam,1)+0.5*vpsloc(n))
          enddo
        enddo
 
