@@ -197,9 +197,19 @@
          do lam=0,4
          do n=1,ndmx
            !something
+           !info%psp_v(n,lam)= (vnl(n,lam,1)+m%r(n)*0.5*vpsloc(n))
            info%psp_v(n,lam)= (vnl(n,lam,1)+0.5*vpsloc(n))
          enddo
        enddo
+
+       l=0
+       n=1
+
+       do while (abs(info%psp_v(n,l)) .gt. 0.00012)
+         info%wfs_rc(l)=info%m%r(n)
+         n=n+1
+       enddo
+       print *,  info%wfs_rc(:)
 
 !       do l=0,4
 !       !do ir=1,ndmx
@@ -303,28 +313,34 @@
 
     !
     title = ""
+
+    do i=1, info%n_wfs
+    print *, info%wfs_n(i),info%wfs_l(i)
+    enddo
+
     do l = 0, 3
       n = minval(info%wfs_n, mask=info%wfs_l == l)
-      j = minval(info%wfs_j, mask=(info%wfs_l == l .and. info%wfs_n == n))
+      !j = minval(info%wfs_j, mask=(info%wfs_l == l .and. info%wfs_n == n))
 
       do i = 1, info%n_wfs
-        if (info%wfs_n(i) == n .and. info%wfs_l(i) == l .and. info%wfs_j(i) == j) then
-          select case (irel)
-          case('nrl')
+        !if (info%wfs_n(i) == n .and. info%wfs_l(i) == l .and. info%wfs_j(i) == j) then
+        if (info%wfs_n(i) == n .and. info%wfs_l(i) == l) then
+          !select case (irel)
+          !case('nrl')
             write(title,'(A)') (title)
             write(title,'(A)') trim(title)
             write(title,'(A,A2,F5.2,"  r=",F5.2,"/")') trim(title), &
                             info%wfs_label(i), info%wfs_occ(i, 1), info%wfs_rc(i)
-          case('isp')
-            write(title,'(A,A2,F4.2,1X,F4.2,1X,F4.2,"/")') trim(title), &
-                     info%wfs_label(i), info%wfs_occ(i, 1), info%wfs_occ(i, 2), &
-                     info%wfs_rc(i)
-          case ('rel')
-            occ = sum(info%wfs_occ(:, 1), mask=(info%wfs_l == l .and. &
-                 (info%wfs_j == l + M_HALF .or. info%wfs_j == l - M_HALF)))
-            write(title,'(A,A2,F5.2,"  r=",F5.2,"/")') trim(title), &
-                                           info%wfs_label(i), occ, info%wfs_rc(i)
-          end select
+!!          case('isp')
+!!            write(title,'(A,A2,F4.2,1X,F4.2,1X,F4.2,"/")') trim(title), &
+!!                     info%wfs_label(i), info%wfs_occ(i, 1), info%wfs_occ(i, 2), &
+!!                     info%wfs_rc(i)
+!!          case ('rel')
+!!            occ = sum(info%wfs_occ(:, 1), mask=(info%wfs_l == l .and. &
+!!                 (info%wfs_j == l + M_HALF .or. info%wfs_j == l - M_HALF)))
+!!            write(title,'(A,A2,F5.2,"  r=",F5.2,"/")') trim(title), &
+!!                                           info%wfs_label(i), occ, info%wfs_rc(i)
+!!          end select
         end if
       end do
 
