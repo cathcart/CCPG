@@ -6,7 +6,7 @@
       use radial_grids, only: radial_grid_type,ndmx
       use ld1inc, only: zed,enne,zval,nwf,nn,ll,jj,el,rcut,octsc,enltsc,&
       phis,lloc,nbeta,rhos,pawsetup,enls,vpsloc,betas,rho,lls,isws,nlcc,&
-      rhoc,rcore,nns,nwfs
+      rhoc,rcore,nns,nwfs,vnl
       use ld1_parameters, only: nwfx,nwfsx
 
       type ps_io_type
@@ -83,7 +83,7 @@
        type(ps_io_type) ,intent(out) :: info
        !mesh parameters
        type(mesh_type) :: m
-       integer :: no_mesh_points,i,j
+       integer :: no_mesh_points,i,j,l,ir
        real(R8) :: rn,r1
        !generalities
        character, external :: atom_name*2
@@ -187,11 +187,15 @@
        info%psp_l=lls(:nwfs)
        allocate(info%psp_j(nwfs))
        do i=1,nwfs,1
-       info%psp_j(i)=i!not needed for non spin polarised 
+       info%psp_j(i)=M_ZERO!not needed for non spin polarised 
        enddo
        !this is the semi-local potential. we can also ignore this 
-       !allocate(info%psp_v(,))
-       !info%psp_v(,)
+       allocate(info%psp_v(ndmx,4))
+       do l=0,3,1
+       do ir=1,ndmx
+       info%psp_v(ir,l)=(vnl(ir,l,1)+vpsloc(ir))
+       enddo
+       enddo
       endsubroutine ps_io_type_fill
 
       subroutine ps_io_save(info)!this seems only necessary to setup the filename and assign io units
