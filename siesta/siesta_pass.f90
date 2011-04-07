@@ -327,6 +327,7 @@
         if (info%wfs_n(i) == n .and. info%wfs_l(i) == l) then
           !select case (irel)
           !case('nrl')
+            print *, "something new"
             write(title,'(A)') (title)
             write(title,'(A)') trim(title)
             write(title,'(A,A2,F5.2,"  r=",F5.2,"/")') trim(title), &
