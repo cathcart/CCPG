@@ -1,7 +1,9 @@
-FC=ifort
-FCFLAGS=-O2 -static
-CC=gcc
-CCFLAGS=
+include ../../make.sys
+
+#FC=ifort
+#FCFLAGS=-O2 -static
+#CC=gcc
+#CCFLAGS=
 
 SUB_DIR_OBJECTS= gsl_interface_c.o gsl_interface_f.o global.o mesh.o splines.o siesta_pass.o
 LIBRARIES= -lgsl -lgslcblas -lm 
