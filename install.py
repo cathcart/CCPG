@@ -105,13 +105,31 @@ def edit_gener_pseudo():
   shutil.copy2(location,location+".backup")
   file_out=open(location,'w')
   file_out.write(current)
-  
+
+def edit_ld1_readin():
+  location="ld1_readin.f90"
+
+  current=open(location).read()
+  insert_text="if (pseudotype < 1.or.pseudotype > 4)"  
+  if current.find(insert_text) >= 0:
+    print "...ld1_readin.f90 already corrected"
+  else:
+    a=current.find("f (pseudotype < 1.or.pseudotype > 3)")
+    current=current[:a]+insert_text+current[a+len(insert_text):]
+    print "...ld1_readin.f90 corrected"
+
+  #write output
+  shutil.copy2(location,location+".backup")
+  file_out=open(location,'w')
+  file_out.write(current)
 
 if __name__=="__main__":
   print "make.depend"
-  edit_make_depend()
+  #edit_make_depend()
   print "Makefile"
-  edit_Makefile()
+  #edit_Makefile()
   print "gener_pseudo.f90"
-  edit_gener_pseudo()
+  #edit_gener_pseudo()
   print "Installation complete"
+ 
+  edit_ld1_readin()
