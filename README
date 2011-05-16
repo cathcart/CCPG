@@ -1,1 +1,5 @@
-some kind of readme file
+Ok so compile without gfortran, or open mpi.
+compile and run with gsl
+
+still have to do the whole cd siesta;make;cd ../;make thing to compile though
+
