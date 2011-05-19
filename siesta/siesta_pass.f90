@@ -8,7 +8,7 @@
       use ld1inc, only: zed,enne,zval,nwf,nn,ll,jj,el,rcut,octsc,&
       enltsc,phis,lloc,nbeta,rhos,pawsetup,enls,vpsloc,betas,rho,&
       lls,isws,nlcc,&
-      rhoc,rcore,nns,nwfs,vnl,ikk
+      rhoc,rcore,nns,nwfs,vnl,ikk,ocs,oc
       use ld1_parameters, only: nwfx,nwfsx
 
       type ps_io_type
@@ -132,15 +132,16 @@
        info%wfs_n(:)=nn(:)
        allocate(info%wfs_l(nwfx))
        info%wfs_l(:)=ll(:)
-       allocate(info%wfs_j(nwfx))
-       info%wfs_j(:)=jj(:)
+       !allocate(info%wfs_j(nwfx))
+       !info%wfs_j(:)=jj(:)
        allocate(info%wfs_label(nwfx))
        info%wfs_label(:)=el(:)
        allocate(info%wfs_rc(nwfsx))!cut off for pseudos (NO US allowed)
        info%wfs_rc(:)=rcut(:)
-       allocate(info%wfs_occ(nwfsx,info%nspin))
+       allocate(info%wfs_occ(nwfx,info%nspin))
        !here we are using the variale configuration occupation listing, just the first one though
-       info%wfs_occ(:,1)=octsc(:,1)!pretend there's only a single spin channel
+       !info%wfs_occ(:,1)=octsc(:,1)!pretend there's only a single spin channel
+       info%wfs_occ(:,1)=oc(:)!pretend there's only a single spin channel
        allocate(info%wfs_ev(nwfsx))
        !info%wfs_ev(:)=enltsc(:,1)
        info%wfs_ev(:)=enls(:)
@@ -200,21 +201,36 @@
        do lam=1,4
          do n=1,ndmx
 !           !info%psp_v(n,lam)= (vnl(n,lam,1)+m%r(n)*0.5*vpsloc(n))
-!           !info%psp_v(n,lam)= (vnl(n,lam,1)+0.5*vpsloc(n))
             info%psp_v(n,lam)= (vnl(n,lam,1)+0.5*vpsloc(n))
          enddo
        enddo
-!
-!       l=0
-!       n=1
-!
-!       !do while (abs(info%psp_v(n,l)) .gt. 0.00012)
-!       !do while (abs(info%psp_v(n,l)) .gt. 0.0012)
-!       !  info%wfs_rc(l)=info%m%r(n)
-!       !  n=n+1
-!       !enddo
-!       print *, "these are the droids you're looking for."
-!       print *,  info%wfs_rc(:)
+ 
+       nwfts=0 
+       do n=1,nwfsx
+         if (ocs(n) .ne. 0) then
+           nwfts=nwfts+1
+         end if
+       enddo
+
+        print *, "my siesta thing"
+        do i=info%n_wfs-nwfts+1, info%n_wfs
+          print *, "n"
+          print *, info%wfs_n(i)
+          print *, "l"
+          print *, info%wfs_l(i)
+          print *, "oc"
+          print *, oc(i)
+        enddo
+
+       l=0
+       n=1
+
+       print *, info%wfs_rc(:)
+
+       do while (abs(info%psp_v(n,l)) .gt. 0.00012)
+         info%wfs_rc(l)=info%m%r(n)
+         n=n+1
+       enddo
 !
 !!       do l=0,4
 !!       !do ir=1,ndmx
@@ -301,7 +317,8 @@
         end select
           
         call date_and_time(values=values)
-        write(header,'(A,A,3X,I4.4,"/",I2.2,"/",I2.2)') "APE-QE Version-", PACKAGE_VERSION, values(1), values(2), values(3)
+        write(header,'(A,A,3X,I4.4,"/",I2.2,"/",I2.2)') "APE-QE&
+             Version-", PACKAGE_VERSION, values(1), values(2), values(3)
         select case (info%scheme)
         case (HAM)
           header = trim(header)//"   Hamann"
@@ -318,40 +335,58 @@
     
         !
         title = ""
+
     
-        do i=1, info%n_wfs
-        print *, info%wfs_n(i),info%wfs_l(i)
+!        do l = 0, 3
+!          n = minval(info%wfs_n, mask=info%wfs_l == l)
+!          !j = minval(info%wfs_j, mask=(info%wfs_l == l .and. info%wfs_n == n))
+!    
+!          do i = 1, info%n_wfs
+!            !if (info%wfs_n(i) == n .and. info%wfs_l(i) == l .and. info%wfs_j(i) == j) then
+!            if (info%wfs_n(i) == n .and. info%wfs_l(i) == l) then
+!              !select case (irel)
+!              !case('nrl')
+!                write(title,'(A)') (title)
+!                write(title,'(A)') trim(title)
+!                !here
+!                write(title,'(A,A2,F5.2,"  r=",F5.2,"/")') trim(title),&
+!                                info%wfs_label(i), info%wfs_occ(i, 1),&
+!                                 info%wfs_rc(i)
+!     !!          case('isp')
+!     !!            write(title,'(A,A2,F4.2,1X,F4.2,1X,F4.2,"/")') &
+!      trim(title), &
+!     !!                     info%wfs_label(i), info%wfs_occ(i, 1),&
+!       info%wfs_occ(i, 2), &
+!     !!                     info%wfs_rc(i)
+!     !!          case ('rel')
+!     !!            occ = sum(info%wfs_occ(:, 1), mask=(info%wfs_l == l&
+!      .and. &
+!     !!                 (info%wfs_j == l + M_HALF .or. info%wfs_j == l&
+!       - M_HALF)))
+!     !!            write(title,'(A,A2,F5.2,"  r=",F5.2,"/")') &
+!      trim(title), &
+!     !!                                           info%wfs_label(i), &
+!      occ, info%wfs_rc(i)
+!     !!          end select
+!            end if
+!          end do
+!        end do
+
+        !my siesta title thing
+        !do i=info%n_wfs-nwfts+1, info%n_wfs
+        l=1
+        do i=info%n_wfs-4+1, info%n_wfs
+          if (info%wfs_occ(i, 1) .le. 0) then
+            info%wfs_occ(i, 1)=0.0
+          endif
+          write(title,'(A,A2,F5.2,"  r=",F5.2,"/")') trim(title),&
+                                info%wfs_label(i),&
+                                info%wfs_occ(i, 1),&
+                                info%wfs_rc(l)
+          l=l+1
         enddo
-    
-        do l = 0, 3
-          n = minval(info%wfs_n, mask=info%wfs_l == l)
-          !j = minval(info%wfs_j, mask=(info%wfs_l == l .and. info%wfs_n == n))
-    
-          do i = 1, info%n_wfs
-            !if (info%wfs_n(i) == n .and. info%wfs_l(i) == l .and. info%wfs_j(i) == j) then
-            if (info%wfs_n(i) == n .and. info%wfs_l(i) == l) then
-              !select case (irel)
-              !case('nrl')
-                print *, "Here is what we want"
-                print *, info%wfs_rc
-                write(title,'(A)') (title)
-                write(title,'(A)') trim(title)
-                write(title,'(A,A2,F5.2,"  r=",F5.2,"/")') trim(title), &
-                                info%wfs_label(i), info%wfs_occ(i, 1), info%wfs_rc(i)
-     !!          case('isp')
-     !!            write(title,'(A,A2,F4.2,1X,F4.2,1X,F4.2,"/")') trim(title), &
-     !!                     info%wfs_label(i), info%wfs_occ(i, 1), info%wfs_occ(i, 2), &
-     !!                     info%wfs_rc(i)
-     !!          case ('rel')
-     !!            occ = sum(info%wfs_occ(:, 1), mask=(info%wfs_l == l .and. &
-     !!                 (info%wfs_j == l + M_HALF .or. info%wfs_j == l - M_HALF)))
-     !!            write(title,'(A,A2,F5.2,"  r=",F5.2,"/")') trim(title), &
-     !!                                           info%wfs_label(i), occ, info%wfs_rc(i)
-     !!          end select
-            end if
-          end do
-    
-        end do
+        print *, title
+        
     
         !Mesh
         call mesh_null(new_m)
