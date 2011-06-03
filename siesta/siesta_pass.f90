@@ -35,6 +35,7 @@
       !Pseudo wavefunctions
       logical :: have_wfs
       integer :: n_wfs 
+      integer :: n_pwfs 
       integer, pointer :: wfs_n(:)
       integer, pointer :: wfs_l(:)
       real(R8), pointer :: wfs_j(:)
@@ -128,6 +129,7 @@
        !set the wavefunction stuff now
        info%have_wfs=.true.
        info%n_wfs=nwf
+       info%n_pwfs=0 !this is the number of pseudo wavefunctions. we'll set this later
        allocate(info%wfs_n(nwfx))
        info%wfs_n(:)=nn(:)
        allocate(info%wfs_l(nwfx))
@@ -205,32 +207,37 @@
          enddo
        enddo
  
-       nwfts=0 
-       do n=1,nwfsx
+       do n=1,nwfsx !set the number of pseudo wavefunctions
          if (ocs(n) .ne. 0) then
-           nwfts=nwfts+1
+           info%n_pwfs=info%n_pwfs+1
          end if
        enddo
 
-        print *, "my siesta thing"
-        do i=info%n_wfs-nwfts+1, info%n_wfs
-          print *, "n"
-          print *, info%wfs_n(i)
-          print *, "l"
-          print *, info%wfs_l(i)
-          print *, "oc"
-          print *, oc(i)
-        enddo
-
-       l=0
-       n=1
-
-       print *, info%wfs_rc(:)
-
-       do while (abs(info%psp_v(n,l)) .gt. 0.00012)
-         info%wfs_rc(l)=info%m%r(n)
-         n=n+1
+       do l=1,nwfx
+         do n=1,grid_in%mesh
+           if (info%m%r(n).lt.rcut(l)) then 
+             info%wfs_rc(l)=info%m%r(n)
+           endif
+         enddo
        enddo
+
+
+!!       l=1
+!!       n=1
+!!       do l =1, nwfx
+!!         do while (info%m%r(n) .lt. rcut(l) )
+!!           n=n+1
+!!           info%wfs_rc(l)=info%m%r(n)
+!!         enddo
+!!       enddo
+!!       print *, "here"
+!!       print *, "here"
+!!       print *, ik(:)
+
+!!       do while (abs(info%psp_v(n,l)) .gt. 0.00012)
+!!         info%wfs_rc(l)=info%m%r(n)
+!!         n=n+1
+!!       enddo
 !
 !!       do l=0,4
 !!       !do ir=1,ndmx
@@ -375,7 +382,7 @@
         !my siesta title thing
         !do i=info%n_wfs-nwfts+1, info%n_wfs
         l=1
-        do i=info%n_wfs-4+1, info%n_wfs
+        do i=info%n_wfs-info%n_pwfs+1, info%n_wfs
           if (info%wfs_occ(i, 1) .le. 0) then
             info%wfs_occ(i, 1)=0.0
           endif
