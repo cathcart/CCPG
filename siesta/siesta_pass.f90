@@ -79,13 +79,22 @@
        call ps_io_save(info)
       endsubroutine siesta_output
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      function cutoff_function(r) result(j)
+        real(R8), intent(in) :: r ! input
+        real(R8):: j ! output
+        j = exp(-5*r)!this is the correct siesta way
+        if (abs(j) .lt. 1.0d-99) then
+          j = 0.0d0
+        endif
 
+      end function cutoff_function
+ 
       subroutine ps_io_type_fill(grid_in,info)
        type(radial_grid_type), intent(in) :: grid_in
        type(ps_io_type) ,intent(out) :: info
        !mesh parameters
        type(mesh_type) :: m
-       integer :: no_mesh_points,i,j,l,ir,ns,lam,n
+       integer :: no_mesh_points,i,j,l,ir,ns,lam,n,jcut
        real(R8) :: rn,r1
        !generalities
        character, external :: atom_name*2
@@ -154,29 +163,6 @@
        !rhos(ndmx,2), i guess this is up and down density. with nspin=1 only 1 channel here is nonzero
        !(check this again later, i might have the wrong channel ^)
 
-!       !set the projector stuff!ultamitely we don't even need this stuff
-!       info%have_kb=.true.
-!       info%kb_l_local=lloc
-!       info%kb_n_proj=nbeta
-!       !allocate(info%kb_l(info%kb_n_proj))
-!       !info%kb_l(:)=pawsetup%l(:)
-!       allocate(info%kb_v_local(ndmax))
-!       info%kb_v_local(:)=vpsloc(:)
-!       allocate(info%kb_proj(ndmx,nwfsx))
-!       info%kb_proj(:,:)=betas(:,:)
-!       allocate(info%kb_l(nbeta))
-!       info%kb_l=lls
-!       allocate(info%kb_j(nbeta))
-!       !just pretend that we can calculate this from j=l+/-s
-!       do i=1,nbeta,1!most likly wrong all the s values are 1
-!        info%kb_j(i)=lls(i)+isws(i)!isws is the spin of the pseudowavefunction
-!       enddo
-!       allocate(info%kb_e(nbeta))
-!       !just pretend that we can calculate this from wfs_ev
-!       do i=1,nbeta,1
-!        info%kb_e(i)=info%wfs_ev(i)
-!       enddo
-!
        !set xc stuff
        info%ixc=1!this should be set as a constant for now, check code later on to see how to integrate it properly
        info%nlcc=nlcc
@@ -198,14 +184,39 @@
        info%psp_j(i)=M_ZERO!not needed for non spin polarised 
        enddo
 
+!set the potential
        allocate(info%psp_v(ndmx,4))
 
        do lam=1,4
          do n=1,ndmx
-!           !info%psp_v(n,lam)= (vnl(n,lam,1)+m%r(n)*0.5*vpsloc(n))
-            info%psp_v(n,lam)= (vnl(n,lam,1)+0.5*vpsloc(n))
+           info%psp_v(n,lam)= (vnl(n,lam,1)/m%r(n)+vpsloc(n))
+           !info%psp_v(n,lam)= (vnl(n,lam,1)+0.5*vpsloc(n))
+           !info%psp_v(n,lam)= (vnl(n,lam,1)+vpsloc(n))
+           !info%psp_v(n,lam)= (vnl(n,lam,1))
+           !info%psp_v(n,lam)= -2*zval+vnl(n,lam,1)
+           !info%psp_v(n,lam)= -2*zval
          enddo
        enddo
+
+       !get jcut mesh index. this is the point where we should just cut off the calculated potential values 
+       do lam=1,4
+         do n=1,ndmx
+           if (abs(info%psp_v(n,lam)+2*zval/m%r(n)) .gt. 1.d-3) then
+           !if (abs(info%psp_v(n,lam)) .gt. 1.d-3) then
+             jcut=n
+           endif
+         enddo
+       !put jcut in the middle of the mesh
+       jcut=1
+
+       !smooth the curve
+         !do n=jcut,ndmx
+         do n=1,ndmx
+           !info%psp_v(n,lam)=-2*zval/m%r(n)+cutoff_function(m%r(n)-m%r(jcut))*(vnl(n,lam,1)/m%r(n)+vpsloc(n)+2*zval/m%r(n))
+           !info%psp_v(n,lam)=-2*zval+cutoff_function(m%r(n)-m%r(jcut))*(info%psp_v(n,lam))
+         enddo
+       enddo!end the lam loop
+
  
        do n=1,nwfsx !set the number of pseudo wavefunctions
          if (ocs(n) .ne. 0) then
@@ -213,42 +224,14 @@
          end if
        enddo
 
-       do l=1,nwfx
+       do l=1,nwfsx!define the proper cutoff values of the wfs
          do n=1,grid_in%mesh
-           if (info%m%r(n).lt.rcut(l)) then 
-             info%wfs_rc(l)=info%m%r(n)
+           if ( info%m%r(n) .lt. rcut(l) ) then
+             info%wfs_rc(l) = info%m%r(n)
            endif
          enddo
        enddo
 
-
-!!       l=1
-!!       n=1
-!!       do l =1, nwfx
-!!         do while (info%m%r(n) .lt. rcut(l) )
-!!           n=n+1
-!!           info%wfs_rc(l)=info%m%r(n)
-!!         enddo
-!!       enddo
-!!       print *, "here"
-!!       print *, "here"
-!!       print *, ik(:)
-
-!!       do while (abs(info%psp_v(n,l)) .gt. 0.00012)
-!!         info%wfs_rc(l)=info%m%r(n)
-!!         n=n+1
-!!       enddo
-!
-!!       do l=0,4
-!!       !do ir=1,ndmx
-!!       do ir=1,ndmx
-!!       !!it should always be vnl(:,l,1), i.e. non relativistic
-!!       !info%psp_v(ir,l)= (vnl(ir,l,2)+vpsloc(ir)*0.5)
-!!       !info%psp_v(ir,l)= (vpsloc(ir)*0.5)
-!!       !info%psp_v(ir,l)= (vnl(ir,l,2))
-!!       info%psp_v(ir,l)= m%r(ir)*(vnl(ir,l,1)+vpsloc(ir))
-!!       enddo
-!!       enddo
       endsubroutine ps_io_type_fill
 
       subroutine ps_io_save(info)!this seems only necessary to setup the filename and assign io units
@@ -381,6 +364,7 @@
 
         !my siesta title thing
         !do i=info%n_wfs-nwfts+1, info%n_wfs
+        print *, info%wfs_occ(:,1)
         l=1
         do i=info%n_wfs-info%n_pwfs+1, info%n_wfs
           if (info%wfs_occ(i, 1) .le. 0) then
@@ -424,11 +408,15 @@
               write(unit,'(" Down Pseudopotential follows (l on next line)")')
               write(unit,'(1X,I2)') info%psp_l(i)
               
-              call mesh_transfer(info%m, info%psp_v(:, i), new_m, dum, 3)
+              !call mesh_transfer(info%m, info%psp_v(:, i), new_m, dum, 3) 
+              call mesh_transfer(info%m, info%psp_v(:, i), new_m, dum, 1) 
+      !interploation type (last arg) could be 1,2,5
               where (abs(dum) < 1.0E-30)
                 dum = M_ZERO
               end where
-              write(unit,'(4(g20.12))') (dum(ir)*new_m%r(ir)*M_TWO, ir = 1, new_m%np)
+              !write(unit,'(4(g20.12))') (dum(ir)*new_m%r(ir)*M_TWO, ir = 1, new_m%np)
+              write(unit,'(4(g20.12))') (dum(ir)*new_m%r(ir), ir = 1, new_m%np)
+              !write(unit,'(4(g20.12))') (dum(ir), ir = 1, new_m%np)!!edit here
             end if
           end do
         end do
