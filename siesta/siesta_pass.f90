@@ -86,8 +86,16 @@
         if (abs(j) .lt. 1.0d-99) then
           j = 0.0d0
         endif
-
       end function cutoff_function
+      
+      function alt_cutoff(r) result(j)
+        real(R8), intent(in) :: r ! input
+        real(R8):: j ! output
+        j = exp(-5*r)!this is the correct siesta way
+        if (abs(j) .lt. 1.0d-99) then
+          j = 0.0d0
+        endif
+      end function alt_cutoff
  
       subroutine ps_io_type_fill(grid_in,info)
        type(radial_grid_type), intent(in) :: grid_in
@@ -184,36 +192,35 @@
        info%psp_j(i)=M_ZERO!not needed for non spin polarised 
        enddo
 
+
 !set the potential
        allocate(info%psp_v(ndmx,4))
 
-       do lam=1,4
-         do n=1,ndmx
-           info%psp_v(n,lam)= (vnl(n,lam,1)/m%r(n)+vpsloc(n))
-           !info%psp_v(n,lam)= (vnl(n,lam,1)+0.5*vpsloc(n))
-           !info%psp_v(n,lam)= (vnl(n,lam,1)+vpsloc(n))
-           !info%psp_v(n,lam)= (vnl(n,lam,1))
-           !info%psp_v(n,lam)= -2*zval+vnl(n,lam,1)
-           !info%psp_v(n,lam)= -2*zval
+       do lam=0,3
+         do n=1,m%np
+           info%psp_v(n,lam+1)= (vnl(n,lam,1)+vpsloc(n))!correct
          enddo
        enddo
 
+
+
        !get jcut mesh index. this is the point where we should just cut off the calculated potential values 
        do lam=1,4
-         do n=1,ndmx
+         do n=1,m%np
            if (abs(info%psp_v(n,lam)+2*zval/m%r(n)) .gt. 1.d-3) then
            !if (abs(info%psp_v(n,lam)) .gt. 1.d-3) then
              jcut=n
            endif
          enddo
        !put jcut in the middle of the mesh
-       jcut=1
 
-       !smooth the curve
-         !do n=jcut,ndmx
-         do n=1,ndmx
-           !info%psp_v(n,lam)=-2*zval/m%r(n)+cutoff_function(m%r(n)-m%r(jcut))*(vnl(n,lam,1)/m%r(n)+vpsloc(n)+2*zval/m%r(n))
-           !info%psp_v(n,lam)=-2*zval+cutoff_function(m%r(n)-m%r(jcut))*(info%psp_v(n,lam))
+       print *, "jcut values"
+       print *, jcut
+       print *, info%m%r(jcut)
+
+       !smooth the curve!this seems all correct 4/8/11
+         do n=jcut,m%np
+           info%psp_v(n,lam)=-2*zval/m%r(n) + cutoff_function(m%r(n)-m%r(jcut))*(info%psp_v(n,lam)+2*zval/m%r(n))
          enddo
        enddo!end the lam loop
 
@@ -224,13 +231,24 @@
          end if
        enddo
 
-       do l=1,nwfsx!define the proper cutoff values of the wfs
+       do l=1,nwfsx!define the proper cutoff values of the wfs (i.e. the mesh point closest to the the cutoff we selected)
          do n=1,grid_in%mesh
            if ( info%m%r(n) .lt. rcut(l) ) then
              info%wfs_rc(l) = info%m%r(n)
            endif
          enddo
        enddo
+
+       print *, "cutoffs"
+       print *, info%wfs_rc(:)
+       print *, rcut(:)
+
+
+       open (unit=997,file="psp_v.dat",action="write",status="replace")
+       do n=1,m%np
+         write (997,*) info%m%r(n),info%psp_v(n,1)*info%m%r(n)+2*zval,(vnl(n,1,1)+vpsloc(n))*info%m%r(n)+2*zval
+       enddo
+       close (997)
 
       endsubroutine ps_io_type_fill
 
@@ -388,11 +406,13 @@
         write(unit,'(1X,A2,1X,A2,1X,A3,1X,A4)') info%symbol(1:2), info%ixc, irel, icore
         write(unit,'(1X,A60)') header
         write(unit,'(1X,A70)') title
-        write(unit,'(1X,2I3,I5,3F20.10)') n_dn, n_up, new_m%np, new_m%b, new_m%a, info%z_val
+        !write(unit,'(1X,2I3,I5,3F20.10)') n_dn, n_up, new_m%np, new_m%b, new_m%a, info%z_val
+        write(unit,'(1X,2I3,I5,3F20.10)') n_dn, n_up, info%m%np, info%m%b, info%m%a, info%z_val
           
         !Write radial grid
         write(unit,'(" Radial grid follows")')
-        write(unit,'(4(g20.12))') (new_m%r(i),i = 1, new_m%np)
+        !write(unit,'(4(g20.12))') (new_m%r(i),i = 1, new_m%np)
+        write(unit,'(4(g20.12))') (info%m%r(i),i = 1, info%m%np)
         allocate(dum(new_m%np))
     
         !Down pseudopotentials
@@ -415,12 +435,14 @@
                 dum = M_ZERO
               end where
               !write(unit,'(4(g20.12))') (dum(ir)*new_m%r(ir)*M_TWO, ir = 1, new_m%np)
-              write(unit,'(4(g20.12))') (dum(ir)*new_m%r(ir), ir = 1, new_m%np)
+              !write(unit,'(4(g20.12))') (dum(ir)*new_m%r(ir), ir = 1, new_m%np)
+              !why not just use our own data
+              write(unit,'(4(g20.12))') (info%psp_v(ir,i)*info%m%r(ir), ir = 1, info%m%np)
               !write(unit,'(4(g20.12))') (dum(ir), ir = 1, new_m%np)!!edit here
             end if
           end do
         end do
-    
+ 
         !Up pseudopotentials
         if (n_up /= 0) then
           do l = 0, 3
@@ -462,10 +484,15 @@
         !Write valence charge
         write(unit,'(" Valence charge follows")')
         call mesh_transfer(info%m, info%rho_val, new_m, dum, 3)
-        where (abs(dum) < 1.0E-30)
-          dum = M_ZERO
+!        where (abs(dum) < 1.0E-30)
+!          dum = M_ZERO
+!        end where
+!        write(unit,'(4(g20.12))') (dum(i)*new_m%r(i)**2*M_FOUR*M_PI, i = 1, new_m%np)
+        where (abs(info%rho_val) < 1.0E-30)
+          info%rho_val = M_ZERO
         end where
-        write(unit,'(4(g20.12))') (dum(i)*new_m%r(i)**2*M_FOUR*M_PI, i = 1, new_m%np)
+        !write(unit,'(4(g20.12))') (info%rho_val(i)*info%m%r(i)**2*M_FOUR*M_PI, i = 1, info%m%np)
+        write(unit,'(4(g20.12))') (info%rho_val(i), i = 1, info%m%np)
     
         if (parsec) then
           !Write pseudo-wave-functions
