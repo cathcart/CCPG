@@ -1,5 +1,9 @@
 Ok so compile without gfortran, or open mpi.
 compile and run with gsl
 
+must set FC to
+
+export FC=ifort
+
 still have to do the whole cd siesta;make;cd ../;make thing to compile though
 
