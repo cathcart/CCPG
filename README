@@ -7,3 +7,7 @@ export FC=ifort
 
 still have to do the whole cd siesta;make;cd ../;make thing to compile though
 
+
+i should include some examples here
+
+pay attention to the pseudotype number
