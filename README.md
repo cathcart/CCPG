@@ -8,7 +8,7 @@ compile and run with gsl
 
 must set FC to
 
-export FC=ifort
+```export FC=ifort```
 
 build with:
 ```cd siesta;make;cd ../;make thing to compile though```
